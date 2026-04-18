@@ -1,0 +1,244 @@
+// Схема базы данных для платформы Liora
+// Все модели соответствуют разделу 3 ТЗ
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// В Prisma 7 URL соединения задаётся в prisma.config.ts, а не здесь
+datasource db {
+  provider = "postgresql"
+}
+
+// ==================== ENUMS ====================
+
+// Роли пользователей на платформе
+enum Role {
+  SUPER_ADMIN     // Администратор всей платформы Liora
+  BUSINESS_ADMIN  // Владелец бизнеса (салон, барбершоп и т.д.)
+  STAFF           // Мастер, работающий в бизнесе
+  CLIENT          // Клиент, который записывается
+}
+
+// Статусы записи (бронирования)
+// Подробная статусная машина описана в разделе 8.2 ТЗ
+enum BookingStatus {
+  PENDING    // Запись создана, ожидает подтверждения мастером
+  CONFIRMED  // Мастер или BUSINESS_ADMIN подтвердил запись
+  CANCELLED  // Запись отменена (клиентом или мастером)
+  COMPLETED  // Визит состоялся, можно оставить отзыв
+}
+
+// Категории бизнесов для фильтрации в каталоге
+enum BusinessCategory {
+  BARBERSHOP    // Барбершоп
+  BEAUTY_SALON  // Салон красоты
+  NAIL_STUDIO   // Nail-студия
+  LASH_STUDIO   // Lash-студия
+  MASSAGE       // Массаж
+  COSMETOLOGY   // Косметология
+  FITNESS       // Фитнес / персональный тренер
+  OTHER         // Другое
+}
+
+// ==================== MODELS ====================
+
+// Пользователь платформы — может быть CLIENT, STAFF, BUSINESS_ADMIN или SUPER_ADMIN
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    // Пароль хранится только в виде bcrypt-хеша
+  name         String
+  phone        String?
+  avatarUrl    String?   // URL фото в Cloudinary
+  role         Role      @default(CLIENT)
+  country      String?   // Код страны: "RU", "BY", "KZ" — для персонализации контента
+  city         String?   // Город пользователя — каталог фильтруется по городу клиента
+  isDeleted    Boolean   @default(false) // Soft delete: не удаляем из БД, просто помечаем
+  deletedAt    DateTime? // Дата мягкого удаления
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Связи
+  ownedBusiness Business?   // Бизнес, которым владеет этот пользователь (для BUSINESS_ADMIN)
+  staffProfile  Staff?      // Профиль мастера (для STAFF)
+  bookings      Booking[]   // Записи клиента (для CLIENT)
+  favorites     Favorite[]  // Избранные мастера (для CLIENT)
+  reviews       Review[]    // Отзывы, оставленные клиентом
+}
+
+// Бизнес — салон, барбершоп и т.д., зарегистрированный на платформе
+model Business {
+  id                    String           @id @default(uuid())
+  name                  String
+  slug                  String           @unique // Уникальный адрес: liora.app/my-salon
+  description           String?
+  address               String?          // Уточнение адреса внутри города
+  phone                 String?
+  logoUrl               String?          // URL логотипа в Cloudinary
+  category              BusinessCategory // Тип бизнеса для фильтрации в каталоге
+  country               String           // Страна бизнеса — обязательно для каталога
+  city                  String           // Город бизнеса — для персонализированного поиска
+  isActive              Boolean          @default(true)  // false = заблокирован SUPER_ADMIN
+  isVisible             Boolean          @default(false) // true только когда есть мастер + услуга
+  maxAdvanceBookingDays Int              @default(30)    // На сколько дней вперёд можно записаться
+  ownerId               String           @unique         // Один владелец — один бизнес
+  createdAt             DateTime         @default(now())
+
+  // Связи
+  owner    User      @relation(fields: [ownerId], references: [id])
+  staff    Staff[]   // Мастера этого бизнеса
+  services Service[] // Услуги этого бизнеса
+  bookings Booking[] // Все записи в этом бизнесе
+  reviews  Review[]  // Отзывы о бизнесе
+
+  // Индексы для быстрой фильтрации в каталоге
+  @@index([category])
+  @@index([isActive, isVisible])
+  @@index([city])
+  @@index([country])
+}
+
+// Мастер — сотрудник бизнеса, к которому записываются клиенты
+model Staff {
+  id         String   @id @default(uuid())
+  userId     String   @unique // Каждый мастер — это пользователь с ролью STAFF
+  businessId String           // Мастер принадлежит одному бизнесу
+  bio        String?          // Описание специализации мастера
+  photoUrl   String?          // Фото мастера в Cloudinary
+  isActive   Boolean  @default(true) // false = деактивирован, не показывается клиентам
+
+  // Связи
+  user      User           @relation(fields: [userId], references: [id])
+  business  Business       @relation(fields: [businessId], references: [id])
+  services  StaffService[] // Услуги, которые выполняет этот мастер (M:N)
+  bookings  Booking[]      // Записи к этому мастеру
+  schedules Schedule[]     // Рабочее расписание мастера
+  favorites Favorite[]     // Клиенты, добавившие мастера в избранное
+
+  @@index([businessId])
+}
+
+// Услуга, предоставляемая бизнесом (маникюр, стрижка и т.д.)
+model Service {
+  id          String   @id @default(uuid())
+  businessId  String
+  name        String
+  description String?
+  price       Decimal  // Цена в рублях
+  duration    Int      // Длительность в минутах (минимум 15 мин)
+  isActive    Boolean  @default(true) // Soft delete — не удаляем если есть история
+
+  // Связи
+  business     Business       @relation(fields: [businessId], references: [id])
+  staff        StaffService[] // Мастера, выполняющие эту услугу (M:N)
+  bookingItems BookingItem[]  // История использования услуги в записях
+
+  @@index([businessId])
+}
+
+// Связующая таблица M:N — какие услуги выполняет каждый мастер
+// Клиент видит только услуги своего выбранного мастера
+model StaffService {
+  staffId   String
+  serviceId String
+
+  staff   Staff   @relation(fields: [staffId], references: [id])
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@id([staffId, serviceId]) // Составной первичный ключ
+}
+
+// Запись клиента к мастеру — основная сущность платформы
+model Booking {
+  id            String        @id @default(uuid())
+  clientId      String
+  staffId       String
+  businessId    String
+  date          DateTime      // Дата визита (без времени)
+  startTime     String        // Время начала: "10:00"
+  endTime       String        // Время окончания: "11:30" — вычисляется из услуг
+  totalPrice    Decimal       // Итоговая цена (сумма всех выбранных услуг)
+  totalDuration Int           // Суммарная длительность в минутах
+  status        BookingStatus @default(PENDING)
+  notes         String?       // Пожелания клиента к визиту
+  createdAt     DateTime      @default(now())
+
+  // Связи
+  client   User          @relation(fields: [clientId], references: [id])
+  staff    Staff         @relation(fields: [staffId], references: [id])
+  business Business      @relation(fields: [businessId], references: [id])
+  items    BookingItem[] // Конкретные услуги в этой записи
+  review   Review?       // Отзыв после визита (один на запись)
+
+  // Индексы для быстрой выборки расписания
+  @@index([staffId])
+  @@index([clientId])
+  @@index([businessId])
+  @@index([status])
+  @@index([date])
+}
+
+// Позиция записи — конкретная услуга внутри бронирования
+// Цена и длительность фиксируются на момент записи (не меняются при изменении прайса)
+model BookingItem {
+  id        String  @id @default(uuid())
+  bookingId String
+  serviceId String
+  price     Decimal // Цена услуги на момент записи — не меняется если мастер изменит прайс
+  duration  Int     // Длительность на момент записи
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+  service Service @relation(fields: [serviceId], references: [id])
+}
+
+// Рабочее расписание мастера по дням недели
+// Используется для расчёта доступных слотов для записи
+model Schedule {
+  id        String  @id @default(uuid())
+  staffId   String
+  dayOfWeek Int     // 0 = Воскресенье, 1 = Понедельник, ..., 6 = Суббота
+  startTime String  // Время начала рабочего дня: "09:00"
+  endTime   String  // Время окончания: "18:00"
+  isWorking Boolean @default(true) // false = выходной день
+
+  staff Staff @relation(fields: [staffId], references: [id])
+
+  @@index([staffId])
+}
+
+// Избранные мастера клиента — быстрый доступ к любимым специалистам
+model Favorite {
+  id        String   @id @default(uuid())
+  clientId  String
+  staffId   String
+  createdAt DateTime @default(now())
+
+  client User  @relation(fields: [clientId], references: [id])
+  staff  Staff @relation(fields: [staffId], references: [id])
+
+  @@unique([clientId, staffId]) // Нельзя добавить одного мастера в избранное дважды
+  @@index([clientId])
+  @@index([staffId])
+}
+
+// Отзыв клиента после завершённого визита
+// Можно оставить только для записи со статусом COMPLETED
+model Review {
+  id         String   @id @default(uuid())
+  bookingId  String   @unique // Один отзыв на одну запись
+  clientId   String
+  staffId    String
+  businessId String
+  rating     Int      // Оценка от 1 до 5 звёзд
+  comment    String?  // Текстовый комментарий (необязательно)
+  createdAt  DateTime @default(now())
+
+  booking  Booking  @relation(fields: [bookingId], references: [id])
+  client   User     @relation(fields: [clientId], references: [id])
+  business Business @relation(fields: [businessId], references: [id])
+
+  @@index([businessId])
+  @@index([staffId])
+  @@index([clientId])
+}
