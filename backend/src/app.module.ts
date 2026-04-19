@@ -13,6 +13,8 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { ProfileModule } from './profile/profile.module';
 import { AdminModule } from './admin/admin.module';
+import { ManageModule } from './manage/manage.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -31,6 +33,8 @@ import { AdminModule } from './admin/admin.module';
     FavoritesModule,
     ProfileModule,
     AdminModule,
+    ManageModule,
+    UploadModule,
   ],
   controllers: [AppController],
   providers: [AppService],

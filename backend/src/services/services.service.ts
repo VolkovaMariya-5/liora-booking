@@ -20,6 +20,14 @@ export class ServicesService {
     });
   }
 
+  // Все услуги бизнеса для BUSINESS_ADMIN — включая неактивные
+  async findByBusinessForAdmin(businessId: string) {
+    return this.prisma.service.findMany({
+      where: { businessId },
+      orderBy: { name: 'asc' },
+    });
+  }
+
   // Создание услуги (только BUSINESS_ADMIN своего бизнеса)
   async create(businessId: string, dto: CreateServiceDto, ownerId: string) {
     await this.assertOwner(businessId, ownerId);

@@ -249,6 +249,36 @@ export class BookingsService {
     }
   }
 
+  // ==================== ОТМЕНА ЗАПИСИ (DELETE) ====================
+
+  // DELETE /api/bookings/:id — отмена записи пользователем
+  // CLIENT: правило 2 часов для CONFIRMED, PENDING отменяет свободно
+  // STAFF и BUSINESS_ADMIN: отменяют без ограничений
+  async cancel(id: string, userId: string, userRole: Role) {
+    const booking = await this.prisma.booking.findUnique({ where: { id } });
+    if (!booking) throw new NotFoundException('Запись не найдена');
+
+    await this.assertAccess(booking, userId, userRole);
+
+    // Можно отменить только PENDING или CONFIRMED
+    if (
+      booking.status !== BookingStatus.PENDING &&
+      booking.status !== BookingStatus.CONFIRMED
+    ) {
+      throw new BadRequestException('Нельзя отменить запись в статусе ' + booking.status);
+    }
+
+    // Для CLIENT: проверка правила 2 часов только для CONFIRMED
+    if (userRole === Role.CLIENT && booking.status === BookingStatus.CONFIRMED) {
+      this.assertCancellationAllowed(booking.date, booking.startTime);
+    }
+
+    return this.prisma.booking.update({
+      where: { id },
+      data: { status: BookingStatus.CANCELLED },
+    });
+  }
+
   // Вспомогательная функция: прибавить минуты к "HH:MM"
   private addMinutes(time: string, minutes: number): string {
     const [h, m] = time.split(':').map(Number);

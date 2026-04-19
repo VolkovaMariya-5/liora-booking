@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Patch, Body, Param, Query, UseGuards,
+  Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { BookingsService } from './bookings.service';
@@ -46,5 +46,14 @@ export class BookingsController {
     @CurrentUser() user: User,
   ) {
     return this.bookingsService.updateStatus(id, status, user.id, user.role);
+  }
+
+  // DELETE /api/bookings/:id — отмена записи
+  // CLIENT: только свои, PENDING свободно, CONFIRMED за 2+ часа
+  // STAFF / BUSINESS_ADMIN: отменяют без ограничений
+  @Delete(':id')
+  @ApiOperation({ summary: 'Отменить запись' })
+  cancel(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.bookingsService.cancel(id, user.id, user.role);
   }
 }

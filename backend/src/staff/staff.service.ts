@@ -28,6 +28,18 @@ export class StaffService {
     });
   }
 
+  // Список всех мастеров бизнеса для BUSINESS_ADMIN — включая неактивных
+  async findByBusinessForAdmin(businessId: string) {
+    return this.prisma.staff.findMany({
+      where: { businessId },
+      include: {
+        user: { select: { name: true, avatarUrl: true, email: true } },
+        services: { include: { service: { select: { id: true, name: true } } } },
+      },
+      orderBy: { id: 'asc' },
+    });
+  }
+
   // Получить одного мастера по ID
   async findById(id: string) {
     const staff = await this.prisma.staff.findUnique({
@@ -119,6 +131,21 @@ export class StaffService {
     });
   }
 
+  // Активация мастера (обратное действие к deactivate)
+  async activate(id: string, ownerId: string) {
+    const staff = await this.prisma.staff.findUnique({ where: { id } });
+    if (!staff) throw new NotFoundException('Мастер не найден');
+    await this.assertOwner(staff.businessId, ownerId);
+
+    const updated = await this.prisma.staff.update({
+      where: { id },
+      data: { isActive: true },
+    });
+
+    await this.businessesService.recalculateVisibility(staff.businessId);
+    return updated;
+  }
+
   // Деактивация мастера (soft delete)
   async deactivate(id: string, ownerId: string) {
     const staff = await this.prisma.staff.findUnique({ where: { id } });
@@ -141,6 +168,23 @@ export class StaffService {
   }
 
   // ==================== РАСПИСАНИЕ ====================
+
+  // Получить расписание текущего мастера по userId
+  async getMySchedule(userId: string) {
+    const staff = await this.prisma.staff.findUnique({ where: { userId } });
+    if (!staff) throw new NotFoundException('Профиль мастера не найден');
+    return this.prisma.schedule.findMany({
+      where: { staffId: staff.id },
+      orderBy: { dayOfWeek: 'asc' },
+    });
+  }
+
+  // Обновить расписание текущего мастера по userId
+  async updateMySchedule(userId: string, schedule: ScheduleDayDto[]) {
+    const staff = await this.prisma.staff.findUnique({ where: { userId } });
+    if (!staff) throw new NotFoundException('Профиль мастера не найден');
+    return this.updateSchedule(staff.id, schedule, userId, Role.STAFF);
+  }
 
   // Обновить расписание мастера (7 дней)
   async updateSchedule(staffId: string, schedule: ScheduleDayDto[], requesterId: string, requesterRole: Role) {

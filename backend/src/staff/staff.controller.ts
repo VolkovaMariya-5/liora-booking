@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards,
+  Controller, Get, Post, Patch, Put, Delete, Body, Param, Query, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { StaffService } from './staff.service';
@@ -60,6 +60,30 @@ export class StaffController {
   @ApiOperation({ summary: 'Деактивировать мастера' })
   deactivate(@Param('id') id: string, @CurrentUser('id') userId: string) {
     return this.staffService.deactivate(id, userId);
+  }
+
+  // GET /api/staff/me/schedule — расписание текущего мастера
+  // Важно: роут /me/schedule должен быть ДО /:id/schedule чтобы не перехватывался
+  @Get('staff/me/schedule')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.STAFF)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Получить своё расписание (для STAFF)' })
+  getMySchedule(@CurrentUser('id') userId: string) {
+    return this.staffService.getMySchedule(userId);
+  }
+
+  // PUT /api/staff/me/schedule — обновить расписание текущего мастера
+  @Put('staff/me/schedule')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.STAFF)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Обновить своё расписание (для STAFF)' })
+  updateMySchedule(
+    @CurrentUser('id') userId: string,
+    @Body('schedule') schedule: ScheduleDayDto[],
+  ) {
+    return this.staffService.updateMySchedule(userId, schedule);
   }
 
   // PUT /api/staff/:id/schedule — обновить расписание
