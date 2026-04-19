@@ -5,23 +5,32 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { BusinessesModule } from './businesses/businesses.module';
+import { StaffModule } from './staff/staff.module';
+import { ServicesModule } from './services/services.module';
+import { BookingsModule } from './bookings/bookings.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { FavoritesModule } from './favorites/favorites.module';
+import { ProfileModule } from './profile/profile.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
-    // ConfigModule — загружает переменные из .env файла
-    // isGlobal: true — доступен во всех модулях без дополнительного импорта
-    ConfigModule.forRoot({
-      isGlobal: true,
-    }),
-
-    // PrismaModule — глобальный модуль для работы с БД через Prisma ORM
+    // Глобальные модули
+    ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
 
-    // UsersModule — сервис для работы с таблицей users
+    // Основные модули приложения
     UsersModule,
-
-    // AuthModule — регистрация, вход, JWT, защита маршрутов
     AuthModule,
+    BusinessesModule,
+    StaffModule,
+    ServicesModule,
+    BookingsModule,
+    ReviewsModule,
+    FavoritesModule,
+    ProfileModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],
