@@ -82,7 +82,7 @@ export function StaffCard({
           <Avatar className="w-16 h-16 shrink-0 ring-2 ring-border">
             <AvatarImage src={photo || undefined} alt={name} />
             <AvatarFallback className="bg-primary/10 text-primary text-lg font-semibold">
-              {name.charAt(0)}
+              {name?.charAt(0) ?? '?'}
             </AvatarFallback>
           </Avatar>
 

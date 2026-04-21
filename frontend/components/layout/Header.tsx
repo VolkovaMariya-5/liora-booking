@@ -71,26 +71,26 @@ export function Header() {
   const profileLinks = PROFILE_LINKS[role] || [];
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/60">
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
         <div className="flex items-center justify-between h-16">
 
-          {/* Логотип */}
-          <Link href="/" className="font-heading text-2xl font-semibold text-primary">
+          {/* Логотип — Cormorant Garamond light для изящного брендового вида */}
+          <Link href="/" className="font-heading text-3xl font-light tracking-wide text-primary">
             Liora
           </Link>
 
           {/* Навигация — десктоп */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-0.5">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                  'px-4 py-2 rounded-full text-sm transition-colors',
                   pathname === link.href || pathname.startsWith(link.href + '/')
-                    ? 'text-primary bg-primary/5'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted',
+                    ? 'text-primary bg-primary/8 font-medium'
+                    : 'text-muted-foreground hover:text-foreground',
                 )}
               >
                 {link.label}

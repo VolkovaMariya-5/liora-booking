@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Patch, Delete, Body, Param, UseGuards,
+  Controller, Get, Post, Patch, Put, Delete, Body, Param, UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -12,6 +12,7 @@ import { StaffService } from '../staff/staff.service';
 import { ServicesService } from '../services/services.service';
 import { CreateStaffDto } from '../staff/dto/create-staff.dto';
 import { CreateServiceDto } from '../services/dto/create-service.dto';
+import { ScheduleDayDto } from '../staff/dto/update-schedule.dto';
 
 // ManageController — все роуты для BUSINESS_ADMIN (/manage/*)
 // Автоматически определяет businessId по текущему пользователю через findMyBusiness()
@@ -61,6 +62,24 @@ export class ManageController {
       return this.staffService.activate(id, userId);
     }
     return this.staffService.update(id, data, userId);
+  }
+
+  // GET /api/manage/staff/:id/schedule — расписание конкретного мастера
+  @Get('staff/:id/schedule')
+  @ApiOperation({ summary: 'Получить расписание мастера' })
+  getStaffSchedule(@Param('id') staffId: string, @CurrentUser('id') userId: string) {
+    return this.staffService.getScheduleByStaffId(staffId, userId);
+  }
+
+  // PUT /api/manage/staff/:id/schedule — сохранить расписание мастера
+  @Put('staff/:id/schedule')
+  @ApiOperation({ summary: 'Обновить расписание мастера' })
+  updateStaffSchedule(
+    @Param('id') staffId: string,
+    @CurrentUser('id') userId: string,
+    @Body('schedule') schedule: ScheduleDayDto[],
+  ) {
+    return this.staffService.updateSchedule(staffId, schedule, userId, Role.BUSINESS_ADMIN);
   }
 
   // ==================== УСЛУГИ ====================

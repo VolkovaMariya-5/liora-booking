@@ -9,7 +9,7 @@ interface Service {
   name: string;
   description?: string | null;
   price: number;
-  durationMin: number;
+  duration: number;
   isActive: boolean;
 }
 

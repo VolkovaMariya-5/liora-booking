@@ -10,11 +10,10 @@ import { BUSINESS_CATEGORIES } from '@/lib/constants';
 
 interface StaffItem {
   id: string;
-  name: string;
   bio?: string | null;
   photoUrl?: string | null;
-  user?: { avatarUrl?: string | null };
-  staffServices?: { service: { name: string; price: number } }[];
+  user?: { name?: string | null; avatarUrl?: string | null };
+  services?: { service: { name: string; price: number } }[];
 }
 
 interface ServiceItem {
@@ -22,7 +21,7 @@ interface ServiceItem {
   name: string;
   description?: string | null;
   price: number;
-  durationMin: number;
+  duration: number;
 }
 
 interface ReviewItem {
@@ -168,11 +167,11 @@ export default async function BusinessPage({ params }: PageProps) {
                   key={s.id}
                   id={s.id}
                   businessSlug={business.slug}
-                  name={s.name}
+                  name={s.user?.name ?? '—'}
                   bio={s.bio}
                   photoUrl={s.photoUrl}
                   avatarUrl={s.user?.avatarUrl}
-                  services={s.staffServices}
+                  services={s.services}
                 />
               ))}
             </div>
@@ -193,7 +192,7 @@ export default async function BusinessPage({ params }: PageProps) {
                       <p className="text-xs text-muted-foreground mt-0.5">{svc.description}</p>
                     )}
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {svc.durationMin} мин
+                      {svc.duration} мин
                     </p>
                   </div>
                   <span className="text-primary font-semibold shrink-0 ml-4">

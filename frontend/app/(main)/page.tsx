@@ -1,12 +1,11 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { BUSINESS_CATEGORIES } from '@/lib/constants';
 import { api } from '@/lib/api';
 import { BusinessCard } from '@/components/businesses/BusinessCard';
-import { Scissors, Clock, Star, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronRight } from 'lucide-react';
 
-// Лендинг /  — главная страница Liora
+// Лендинг / — главная страница Liora
 // Секции: Hero, Как это работает, Категории, Популярные бизнесы, Для владельцев
 
 // Получаем 6 популярных бизнесов (Server Component)
@@ -26,77 +25,107 @@ export default async function HomePage() {
     <div className="flex flex-col">
 
       {/* ─── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative bg-linear-to-br from-primary/5 via-background to-accent/5 py-20 sm:py-28 overflow-hidden">
-        {/* Декоративный круг */}
-        <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
+      <section className="relative min-h-[88vh] flex flex-col items-center justify-center text-center px-4 sm:px-8 py-24 overflow-hidden">
+        {/* Тонкое радиальное свечение сверху — едва заметный фиолетовый отблеск */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, oklch(0.52 0.12 295 / 0.07) 0%, transparent 70%)' }}
+        />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <Badge variant="outline" className="mb-6 text-xs px-3 py-1 border-primary/30 text-primary">
-            Запись без звонков
-          </Badge>
-
-          <h1 className="font-heading text-5xl sm:text-6xl lg:text-7xl font-semibold text-foreground leading-tight mb-6">
-            Красота начинается
-            <br />
-            <span className="text-primary">с одного клика</span>
-          </h1>
-
-          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-            Находите лучших мастеров рядом с вами и записывайтесь онлайн — без ожидания,
-            без звонков, в любое время.
-          </p>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" className="px-8 h-12 text-base" render={<Link href="/businesses" />}>
-              Найти мастера
-            </Button>
-            <Button size="lg" variant="outline" className="px-8 h-12 text-base" render={<Link href="/auth/register-business" />}>
-              Я — владелец бизнеса
-            </Button>
-          </div>
+        {/* Метка-пилюля */}
+        <div className="mb-10 inline-flex items-center gap-2 border border-border rounded-full px-5 py-1.5 text-xs tracking-widest uppercase text-muted-foreground">
+          Онлайн-запись к мастерам
         </div>
+
+        {/* Главный заголовок — oversized editorial serif */}
+        {/* font-light (300) на Cormorant Garamond даёт изящный люксовый вид */}
+        <h1
+          className="font-heading font-light text-foreground mb-8 leading-[0.92] tracking-[-0.02em] max-w-5xl"
+          style={{ fontSize: 'clamp(3.5rem, 10vw, 8.5rem)' }}
+        >
+          Красота начинается<br />
+          <em className="text-primary not-italic">с одного клика</em>
+        </h1>
+
+        {/* Подзаголовок */}
+        <p className="text-base sm:text-lg text-muted-foreground max-w-md leading-relaxed mb-12">
+          Находите лучших мастеров рядом с вами и записывайтесь онлайн — без ожидания, в любое время.
+        </p>
+
+        {/* CTA-кнопки */}
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Button
+            size="lg"
+            className="px-9 h-12 text-sm tracking-wide rounded-full"
+            render={<Link href="/businesses" />}
+          >
+            Найти мастера
+            <ArrowRight className="ml-2 w-4 h-4" />
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="px-9 h-12 text-sm tracking-wide rounded-full"
+            render={<Link href="/auth/register-business" />}
+          >
+            Я — владелец бизнеса
+          </Button>
+        </div>
+
+        {/* Тонкая разделительная линия снизу */}
+        <div className="absolute bottom-0 left-[8%] right-[8%] h-px bg-border" />
       </section>
 
       {/* ─── Как это работает ─────────────────────────────────────────── */}
-      <section className="py-16 sm:py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-heading text-3xl sm:text-4xl font-semibold text-center mb-12">
+      <section className="py-24 sm:py-32">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8">
+
+          {/* Верхний ярлык + заголовок секции */}
+          <p className="text-xs tracking-widest uppercase text-muted-foreground mb-4">
+            Как это работает
+          </p>
+          <h2 className="font-heading font-light text-foreground mb-16 sm:mb-20 max-w-xl leading-tight"
+            style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)' }}
+          >
             Записаться просто
           </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+          {/* Три шага — разделены вертикальными линиями на десктопе */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
             {[
               {
-                icon: <Scissors className="w-7 h-7 text-primary" />,
-                step: '1',
+                num: '01',
                 title: 'Выберите мастера',
                 desc: 'Найдите специалиста по категории, городу или имени. Смотрите услуги и цены.',
               },
               {
-                icon: <Clock className="w-7 h-7 text-primary" />,
-                step: '2',
+                num: '02',
                 title: 'Выберите время',
                 desc: 'Выберите удобную дату и свободный слот — система покажет реальное расписание.',
               },
               {
-                icon: <Star className="w-7 h-7 text-primary" />,
-                step: '3',
+                num: '03',
                 title: 'Подтвердите запись',
                 desc: 'Получите подтверждение в личном кабинете. Мастер уже ждёт!',
               },
             ].map((item) => (
-              <div key={item.step} className="flex flex-col items-center text-center gap-4 p-6">
-                {/* Номер шага */}
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-                    {item.icon}
-                  </div>
-                  <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
-                    {item.step}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-foreground text-lg">{item.title}</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+              <div
+                key={item.num}
+                className="px-0 sm:px-10 py-10 sm:py-0 first:sm:pl-0 last:sm:pr-0"
+              >
+                {/* Крупный декоративный номер в Cormorant */}
+                <span
+                  className="font-heading font-light text-primary/25 leading-none block mb-6"
+                  style={{ fontSize: 'clamp(4rem, 8vw, 6rem)' }}
+                >
+                  {item.num}
+                </span>
+                <h3 className="font-heading font-medium text-foreground mb-3 text-xl sm:text-2xl">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {item.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -104,27 +133,37 @@ export default async function HomePage() {
       </section>
 
       {/* ─── Категории ───────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-20 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-end justify-between mb-10">
-            <h2 className="font-heading text-3xl sm:text-4xl font-semibold">Категории</h2>
+      <section className="py-24 sm:py-32 border-t border-border">
+        <div className="max-w-6xl mx-auto px-4 sm:px-8">
+          <div className="flex items-end justify-between mb-12 sm:mb-16">
+            <div>
+              <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
+                Все направления
+              </p>
+              <h2
+                className="font-heading font-light text-foreground leading-tight"
+                style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
+              >
+                Категории
+              </h2>
+            </div>
             <Link
               href="/businesses"
-              className="text-sm text-primary font-medium flex items-center gap-1 hover:underline"
+              className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Все <ChevronRight className="w-4 h-4" />
+              Смотреть все <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {BUSINESS_CATEGORIES.map((cat) => (
               <Link
                 key={cat.value}
                 href={`/businesses?category=${cat.value}`}
-                className="group flex flex-col items-center justify-center gap-3 p-6 rounded-2xl bg-background border border-border hover:border-primary hover:shadow-sm transition-all duration-200"
+                className="group flex flex-col gap-4 p-6 rounded-2xl border border-border hover:border-primary/40 hover:bg-primary/[0.03] transition-all duration-200"
               >
-                <span className="text-4xl">{cat.icon}</span>
-                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors text-center leading-tight">
+                <span className="text-3xl">{cat.icon}</span>
+                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors leading-snug">
                   {cat.label}
                 </span>
               </Link>
@@ -135,21 +174,29 @@ export default async function HomePage() {
 
       {/* ─── Популярные бизнесы ──────────────────────────────────────── */}
       {businesses.length > 0 && (
-        <section className="py-16 sm:py-20 bg-background">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-end justify-between mb-10">
-              <h2 className="font-heading text-3xl sm:text-4xl font-semibold">
-                Популярные места
-              </h2>
+        <section className="py-24 sm:py-32 border-t border-border">
+          <div className="max-w-6xl mx-auto px-4 sm:px-8">
+            <div className="flex items-end justify-between mb-12 sm:mb-16">
+              <div>
+                <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
+                  Рекомендуем
+                </p>
+                <h2
+                  className="font-heading font-light text-foreground leading-tight"
+                  style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
+                >
+                  Популярные места
+                </h2>
+              </div>
               <Link
                 href="/businesses"
-                className="text-sm text-primary font-medium flex items-center gap-1 hover:underline"
+                className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                Все <ChevronRight className="w-4 h-4" />
+                Все места <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {businesses.map((b: any) => (
                 <BusinessCard
                   key={b.id}
@@ -171,17 +218,28 @@ export default async function HomePage() {
       )}
 
       {/* ─── Для владельцев бизнеса ──────────────────────────────────── */}
-      <section className="py-16 sm:py-20 bg-linear-to-br from-primary/5 to-accent/5">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center">
-          <h2 className="font-heading text-3xl sm:text-4xl font-semibold mb-4">
-            Ведёте салон или студию?
-          </h2>
-          <p className="text-muted-foreground text-lg mb-8 leading-relaxed">
-            Подключите ваш бизнес к Liora — управляйте записями, мастерами и расписанием
-            из единого кабинета. Бесплатно.
+      {/* Тёмная секция (primary) — сильный контраст, финальный призыв к действию */}
+      <section className="py-24 sm:py-32 bg-primary text-primary-foreground">
+        <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center">
+          <p className="text-xs tracking-widest uppercase text-primary-foreground/50 mb-6">
+            Для бизнеса
           </p>
-          <Button size="lg" className="px-10 h-12 text-base" render={<Link href="/auth/register-business" />}>
-            Добавить бизнес →
+          <h2
+            className="font-heading font-light text-primary-foreground mb-6 leading-[0.95]"
+            style={{ fontSize: 'clamp(2.8rem, 7vw, 6rem)' }}
+          >
+            Ведёте салон<br />или студию?
+          </h2>
+          <p className="text-primary-foreground/65 text-lg mb-10 leading-relaxed max-w-md mx-auto">
+            Подключите ваш бизнес к Liora — управляйте записями, мастерами и расписанием из единого кабинета. Бесплатно.
+          </p>
+          <Button
+            size="lg"
+            className="px-10 h-12 text-sm tracking-wide rounded-full bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+            render={<Link href="/auth/register-business" />}
+          >
+            Добавить бизнес
+            <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
         </div>
       </section>

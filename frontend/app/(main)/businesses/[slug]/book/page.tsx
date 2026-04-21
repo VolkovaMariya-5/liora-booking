@@ -38,6 +38,7 @@ export default async function BookPage({ params }: PageProps) {
   return (
     <BookingWizard
       businessSlug={slug}
+      businessId={business.id}
       businessName={business.name}
       staffList={business.staff ?? []}
       maxAdvanceDays={business.maxAdvanceBookingDays ?? 30}

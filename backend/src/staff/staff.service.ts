@@ -91,13 +91,20 @@ export class StaffService {
         });
       }
 
-      return { staff, user };
+      return staff;
     });
 
     // После добавления мастера пересчитываем видимость бизнеса
     await this.businessesService.recalculateVisibility(businessId);
 
-    return result.staff;
+    // Возвращаем мастера с данными пользователя и услугами — фронтенд сразу показывает их в списке
+    return this.prisma.staff.findUnique({
+      where: { id: result.id },
+      include: {
+        user: { select: { name: true, email: true, avatarUrl: true } },
+        services: { include: { service: { select: { id: true, name: true } } } },
+      },
+    });
   }
 
   // Обновление мастера (биo, фото, услуги)
@@ -168,6 +175,17 @@ export class StaffService {
   }
 
   // ==================== РАСПИСАНИЕ ====================
+
+  // Получить расписание мастера по его staffId (для BUSINESS_ADMIN)
+  async getScheduleByStaffId(staffId: string, ownerId: string) {
+    const staff = await this.prisma.staff.findUnique({ where: { id: staffId } });
+    if (!staff) throw new NotFoundException('Мастер не найден');
+    await this.assertOwner(staff.businessId, ownerId);
+    return this.prisma.schedule.findMany({
+      where: { staffId },
+      orderBy: { dayOfWeek: 'asc' },
+    });
+  }
 
   // Получить расписание текущего мастера по userId
   async getMySchedule(userId: string) {

@@ -12,7 +12,7 @@ interface Service {
   name: string;
   description?: string | null;
   price: number;
-  durationMin: number;
+  duration: number;
   isActive: boolean;
 }
 
@@ -22,10 +22,10 @@ export default function ServicesList({ services: initialServices }: { services: 
   const [services, setServices] = useState(initialServices);
   const [editing, setEditing] = useState<string | null>(null); // id редактируемой услуги
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ name: '', description: '', price: '', durationMin: '60' });
+  const [form, setForm] = useState({ name: '', description: '', price: '', duration: '60' });
   const [saving, setSaving] = useState(false);
 
-  const resetForm = () => setForm({ name: '', description: '', price: '', durationMin: '60' });
+  const resetForm = () => setForm({ name: '', description: '', price: '', duration: '60' });
 
   // Добавление новой услуги
   const handleAdd = async () => {
@@ -39,7 +39,7 @@ export default function ServicesList({ services: initialServices }: { services: 
         name: form.name.trim(),
         description: form.description.trim() || undefined,
         price: Number(form.price),
-        durationMin: Number(form.durationMin),
+        duration: Number(form.duration),
       });
       setServices((prev) => [...prev, res.data]);
       setShowAdd(false);
@@ -98,7 +98,7 @@ export default function ServicesList({ services: initialServices }: { services: 
                   <p className="text-xs text-muted-foreground mt-0.5">{svc.description}</p>
                 )}
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  {svc.durationMin} мин · {Number(svc.price).toLocaleString('ru')} ₽
+                  {svc.duration} мин · {Number(svc.price).toLocaleString('ru')} ₽
                 </p>
               </div>
               <div className="flex gap-1 shrink-0">
@@ -150,15 +150,15 @@ function ServiceForm({
   onCancel,
   saving,
 }: {
-  initial?: { name: string; description?: string | null; price: number; durationMin: number };
-  onSave: (data: { name: string; description?: string; price: number; durationMin: number }) => void;
+  initial?: { name: string; description?: string | null; price: number; duration: number };
+  onSave: (data: { name: string; description?: string; price: number; duration: number }) => void;
   onCancel: () => void;
   saving: boolean;
 }) {
   const [name, setName] = useState(initial?.name ?? '');
   const [description, setDescription] = useState(initial?.description ?? '');
   const [price, setPrice] = useState(String(initial?.price ?? ''));
-  const [durationMin, setDurationMin] = useState(String(initial?.durationMin ?? '60'));
+  const [duration, setDurationMin] = useState(String(initial?.duration ?? '60'));
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -184,14 +184,14 @@ function ServiceForm({
       <input
         type="number"
         placeholder="Длительность (мин)"
-        value={durationMin}
+        value={duration}
         onChange={(e) => setDurationMin(e.target.value)}
         className="px-3 py-2 rounded-lg border border-border bg-background text-sm focus:border-primary focus:outline-none"
       />
       <div className="sm:col-span-2 flex gap-2">
         <Button
           size="sm"
-          onClick={() => onSave({ name, description: description || undefined, price: Number(price), durationMin: Number(durationMin) })}
+          onClick={() => onSave({ name, description: description || undefined, price: Number(price), duration: Number(duration) })}
           disabled={saving || !name.trim() || !price}
         >
           {saving ? 'Сохраняем...' : 'Сохранить'}

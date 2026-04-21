@@ -11,31 +11,34 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 
-// ─── Типы ─────────────────────────────────────────────────────────────────
+// ─── Типы — соответствуют реальной форме ответа API ───────────────────────
 
 interface StaffOption {
   id: string;
-  name: string;
   bio?: string | null;
   photoUrl?: string | null;
-  staffServices?: { service: { id: string; name: string; price: number; durationMin: number } }[];
+  // Имя хранится в связанном User, не в Staff
+  user?: { name?: string | null; avatarUrl?: string | null };
+  // Prisma-поле называется services (StaffService[]), не staffServices
+  services?: { service: ServiceOption }[];
 }
 
 interface ServiceOption {
   id: string;
   name: string;
   price: number;
-  durationMin: number;
+  duration: number; // поле называется duration, не durationMin
 }
 
 interface BookingWizardProps {
   businessSlug: string;
+  businessId: string; // нужен для POST /bookings
   businessName: string;
   staffList: StaffOption[];
   maxAdvanceDays: number;
 }
 
-// Шаги формы (раздел 11 ТЗ) — массив объектов для компонента Stepper
+// Шаги формы (раздел 11 ТЗ)
 const STEPS = [
   { label: 'Мастер' },
   { label: 'Услуги' },
@@ -50,6 +53,7 @@ const STEPS = [
 // Состояние хранится в useState, данные передаются между шагами без URL
 export default function BookingWizard({
   businessSlug,
+  businessId,
   businessName,
   staffList,
   maxAdvanceDays,
@@ -64,8 +68,8 @@ export default function BookingWizard({
   const [selectedServices, setSelectedServices] = useState<ServiceOption[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const [phone, setPhone] = useState(session?.user ? '' : '');
-  const [name, setName] = useState(session?.user?.name || '');
+  const [phone, setPhone] = useState('');
+  const [contactName, setContactName] = useState(session?.user?.name || '');
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -82,13 +86,12 @@ export default function BookingWizard({
     }
   }, [searchParams, staffList]);
 
-  // Доступные услуги выбранного мастера
-  const staffServices: ServiceOption[] = selectedStaff?.staffServices?.map((ss) => ss.service) ?? [];
+  // Услуги выбранного мастера (из Prisma relation services)
+  const staffServices: ServiceOption[] =
+    selectedStaff?.services?.map((ss) => ss.service) ?? [];
 
-  // Суммарная длительность выбранных услуг (в минутах)
-  const totalDuration = selectedServices.reduce((acc, s) => acc + s.durationMin, 0);
-
-  // Суммарная стоимость
+  // Суммарная длительность и стоимость
+  const totalDuration = selectedServices.reduce((acc, s) => acc + s.duration, 0);
   const totalPrice = selectedServices.reduce((acc, s) => acc + Number(s.price), 0);
 
   // ── Загрузка доступных слотов при выборе даты ──────────────────────
@@ -101,7 +104,7 @@ export default function BookingWizard({
         const res = await api.get(
           `/staff/${selectedStaff.id}/available-slots?date=${date}&serviceIds=${serviceIds}`,
         );
-        setAvailableSlots(res.data ?? []);
+        setAvailableSlots(res.data?.slots ?? res.data ?? []);
       } catch {
         setAvailableSlots([]);
         toast.error('Не удалось загрузить расписание');
@@ -115,11 +118,11 @@ export default function BookingWizard({
   useEffect(() => {
     if (selectedDate) {
       loadSlots(selectedDate);
-      setSelectedTime(null); // сброс времени при смене даты
+      setSelectedTime(null);
     }
   }, [selectedDate, loadSlots]);
 
-  // ── Переключение услуги (чекбокс) ──────────────────────────────────
+  // ── Переключение услуги ─────────────────────────────────────────────
   const toggleService = (svc: ServiceOption) => {
     setSelectedServices((prev) =>
       prev.find((s) => s.id === svc.id)
@@ -138,26 +141,27 @@ export default function BookingWizard({
     try {
       await api.post('/bookings', {
         staffId: selectedStaff.id,
+        businessId, // обязательное поле из CreateBookingDto
         date: selectedDate,
         startTime: selectedTime,
         serviceIds: selectedServices.map((s) => s.id),
-        clientName: name,
-        clientPhone: phone,
       });
       toast.success('Запись создана! Ожидайте подтверждения.');
       router.push('/bookings');
     } catch (err: any) {
-      const msg = err?.response?.data?.message;
       if (err?.response?.status === 409) {
         toast.error('Этот слот уже занят — выберите другое время');
         setStep(2);
       } else {
-        toast.error(msg || 'Не удалось создать запись');
+        toast.error(err?.response?.data?.message || 'Не удалось создать запись');
       }
     } finally {
       setSubmitting(false);
     }
   };
+
+  // Имя мастера (из связанного user)
+  const staffName = (s: StaffOption) => s.user?.name ?? '—';
 
   // ── Sidebar «Ваша запись» ────────────────────────────────────────────
   const BookingSidebar = () => (
@@ -166,7 +170,7 @@ export default function BookingWizard({
       <div className="space-y-1.5 text-muted-foreground">
         <p><span className="text-foreground font-medium">Бизнес:</span> {businessName}</p>
         {selectedStaff && (
-          <p><span className="text-foreground font-medium">Мастер:</span> {selectedStaff.name}</p>
+          <p><span className="text-foreground font-medium">Мастер:</span> {staffName(selectedStaff)}</p>
         )}
         {selectedServices.length > 0 && (
           <div>
@@ -211,7 +215,6 @@ export default function BookingWizard({
       <Stepper steps={STEPS} currentStep={step} className="mb-8" />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Основной контент (2 колонки на десктопе) */}
         <div className="lg:col-span-2 space-y-6">
 
           {/* ── Шаг 1: Выбор мастера ── */}
@@ -236,13 +239,13 @@ export default function BookingWizard({
                     }`}
                   >
                     <Avatar className="w-12 h-12 shrink-0">
-                      <AvatarImage src={s.photoUrl || undefined} />
+                      <AvatarImage src={s.photoUrl || s.user?.avatarUrl || undefined} />
                       <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                        {s.name.charAt(0)}
+                        {staffName(s).charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
-                      <p className="font-medium text-foreground">{s.name}</p>
+                      <p className="font-medium text-foreground">{staffName(s)}</p>
                       {s.bio && (
                         <p className="text-xs text-muted-foreground line-clamp-1">{s.bio}</p>
                       )}
@@ -250,11 +253,7 @@ export default function BookingWizard({
                   </button>
                 ))}
               </div>
-              <Button
-                className="mt-6"
-                disabled={!selectedStaff}
-                onClick={() => setStep(1)}
-              >
+              <Button className="mt-6" disabled={!selectedStaff} onClick={() => setStep(1)}>
                 Далее →
               </Button>
             </div>
@@ -265,7 +264,7 @@ export default function BookingWizard({
             <div>
               <h2 className="text-lg font-semibold mb-4">Выберите услуги</h2>
               {staffServices.length === 0 ? (
-                <p className="text-muted-foreground">У мастера нет услуг</p>
+                <p className="text-muted-foreground">У мастера нет привязанных услуг</p>
               ) : (
                 <div className="space-y-2">
                   {staffServices.map((svc) => {
@@ -283,7 +282,7 @@ export default function BookingWizard({
                       >
                         <div>
                           <p className="font-medium text-foreground">{svc.name}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{svc.durationMin} мин</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{svc.duration} мин</p>
                         </div>
                         <span className="font-semibold text-primary shrink-0 ml-4">
                           {Number(svc.price).toLocaleString('ru')} ₽
@@ -312,7 +311,6 @@ export default function BookingWizard({
                 selectedDate={selectedDate}
                 onSelect={setSelectedDate}
               />
-
               {selectedDate && (
                 <div className="mt-6">
                   <h3 className="font-medium mb-3">Доступное время</h3>
@@ -323,18 +321,14 @@ export default function BookingWizard({
                       ))}
                     </div>
                   ) : availableSlots.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Нет доступного времени</p>
+                    <p className="text-sm text-muted-foreground">Нет доступного времени на эту дату</p>
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {availableSlots.map((slot) => (
                         <TimeSlot
                           key={slot}
                           time={slot}
-                          state={
-                            selectedTime === slot
-                              ? 'selected'
-                              : 'available'
-                          }
+                          state={selectedTime === slot ? 'selected' : 'available'}
                           onClick={() => setSelectedTime(slot)}
                         />
                       ))}
@@ -342,13 +336,9 @@ export default function BookingWizard({
                   )}
                 </div>
               )}
-
               <div className="flex gap-3 mt-6">
                 <Button variant="outline" onClick={() => setStep(1)}>← Назад</Button>
-                <Button
-                  disabled={!selectedDate || !selectedTime}
-                  onClick={() => setStep(3)}
-                >
+                <Button disabled={!selectedDate || !selectedTime} onClick={() => setStep(3)}>
                   Далее →
                 </Button>
               </div>
@@ -364,8 +354,8 @@ export default function BookingWizard({
                   <label className="block text-sm font-medium text-foreground mb-1">Имя</label>
                   <input
                     type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={contactName}
+                    onChange={(e) => setContactName(e.target.value)}
                     placeholder="Ваше имя"
                     className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground focus:border-primary focus:outline-none text-sm"
                   />
@@ -383,7 +373,7 @@ export default function BookingWizard({
               </div>
               <div className="flex gap-3 mt-6">
                 <Button variant="outline" onClick={() => setStep(2)}>← Назад</Button>
-                <Button disabled={!name.trim()} onClick={() => setStep(4)}>
+                <Button disabled={!contactName.trim()} onClick={() => setStep(4)}>
                   Далее →
                 </Button>
               </div>
@@ -395,11 +385,8 @@ export default function BookingWizard({
             <div>
               <h2 className="text-lg font-semibold mb-4">Подтвердите запись</h2>
               <div className="rounded-xl border border-border bg-card p-4 space-y-3 text-sm max-w-md">
-                <Row label="Мастер" value={selectedStaff?.name} />
-                <Row
-                  label="Услуги"
-                  value={selectedServices.map((s) => s.name).join(', ')}
-                />
+                <Row label="Мастер" value={selectedStaff ? staffName(selectedStaff) : ''} />
+                <Row label="Услуги" value={selectedServices.map((s) => s.name).join(', ')} />
                 <Row
                   label="Дата"
                   value={
@@ -412,7 +399,7 @@ export default function BookingWizard({
                 />
                 <Row label="Время" value={selectedTime ?? ''} />
                 <Row label="Длительность" value={`${totalDuration} мин`} />
-                <Row label="Имя" value={name} />
+                <Row label="Имя" value={contactName} />
                 {phone && <Row label="Телефон" value={phone} />}
                 <div className="pt-2 border-t border-border flex justify-between font-semibold">
                   <span>Итого</span>
@@ -429,7 +416,7 @@ export default function BookingWizard({
           )}
         </div>
 
-        {/* Sidebar (показывается с шага 1+, только десктоп) */}
+        {/* Sidebar (с шага 1+, только десктоп) */}
         {step > 0 && (
           <div className="hidden lg:block">
             <BookingSidebar />
