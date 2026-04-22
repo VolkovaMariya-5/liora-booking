@@ -32,20 +32,17 @@ interface ServiceOption {
 
 interface BookingWizardProps {
   businessSlug: string;
-  businessId: string; // нужен для POST /bookings
+  businessId: string;
   businessName: string;
   staffList: StaffOption[];
+  allServices: ServiceOption[]; // все услуги бизнеса (для флоу service-first)
   maxAdvanceDays: number;
+  flow: 'master' | 'service'; // флоу записи: мастер→услуга или услуга→мастер
 }
 
-// Шаги формы (раздел 11 ТЗ)
-const STEPS = [
-  { label: 'Мастер' },
-  { label: 'Услуги' },
-  { label: 'Дата и время' },
-  { label: 'Контакты' },
-  { label: 'Подтверждение' },
-];
+// Шаги зависят от флоу
+const STEPS_MASTER  = [{ label: 'Мастер' }, { label: 'Услуги' }, { label: 'Дата и время' }, { label: 'Контакты' }, { label: 'Подтверждение' }];
+const STEPS_SERVICE = [{ label: 'Услуга' }, { label: 'Мастер' }, { label: 'Дата и время' }, { label: 'Контакты' }, { label: 'Подтверждение' }];
 
 // ─── Компонент ────────────────────────────────────────────────────────────
 
@@ -56,11 +53,15 @@ export default function BookingWizard({
   businessId,
   businessName,
   staffList,
+  allServices,
   maxAdvanceDays,
+  flow,
 }: BookingWizardProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
+
+  const STEPS = flow === 'service' ? STEPS_SERVICE : STEPS_MASTER;
 
   // ── Состояние формы ──────────────────────────────────────────────────
   const [step, setStep] = useState(0);
@@ -74,21 +75,31 @@ export default function BookingWizard({
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Предвыбор мастера из URL параметра ?staffId=
+  // Предвыбор мастера из URL параметра ?staffId= (только флоу master-first)
   useEffect(() => {
+    if (flow !== 'master') return;
     const staffId = searchParams.get('staffId');
     if (staffId) {
       const found = staffList.find((s) => s.id === staffId);
       if (found) {
         setSelectedStaff(found);
-        setStep(1); // сразу переходим к шагу выбора услуг
+        setStep(1);
       }
     }
-  }, [searchParams, staffList]);
+  }, [searchParams, staffList, flow]);
 
-  // Услуги выбранного мастера (из Prisma relation services)
+  // Услуги выбранного мастера (для флоу master-first)
   const staffServices: ServiceOption[] =
     selectedStaff?.services?.map((ss) => ss.service) ?? [];
+
+  // Мастера, которые оказывают все выбранные услуги (для флоу service-first)
+  const eligibleStaff: StaffOption[] = flow === 'service'
+    ? staffList.filter((s) =>
+        selectedServices.every((svc) =>
+          s.services?.some((ss) => ss.service.id === svc.id),
+        ),
+      )
+    : staffList;
 
   // Суммарная длительность и стоимость
   const totalDuration = selectedServices.reduce((acc, s) => acc + s.duration, 0);
@@ -208,6 +219,67 @@ export default function BookingWizard({
 
   // ── Рендер шагов ────────────────────────────────────────────────────
 
+  // Вспомогательный рендер списка услуг (переиспользуется в обоих флоу)
+  const renderServiceList = (services: ServiceOption[]) => (
+    <div className="space-y-2">
+      {services.map((svc) => {
+        const isSelected = !!selectedServices.find((s) => s.id === svc.id);
+        return (
+          <button
+            key={svc.id}
+            type="button"
+            onClick={() => toggleService(svc)}
+            className={`w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all ${
+              isSelected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+            }`}
+          >
+            <div>
+              <p className="font-medium text-foreground">{svc.name}</p>
+              <p className="text-xs text-muted-foreground mt-0.5">{svc.duration} мин</p>
+            </div>
+            <span className="font-semibold text-primary shrink-0 ml-4">
+              {Number(svc.price).toLocaleString('ru')} ₽
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  // Вспомогательный рендер списка мастеров (переиспользуется в обоих флоу)
+  const renderStaffList = (list: StaffOption[]) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {list.map((s) => (
+        <button
+          key={s.id}
+          type="button"
+          onClick={() => {
+            setSelectedStaff(s);
+            if (flow === 'master') {
+              setSelectedServices([]);
+              setSelectedDate(null);
+              setSelectedTime(null);
+            }
+          }}
+          className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
+            selectedStaff?.id === s.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
+          }`}
+        >
+          <Avatar className="w-12 h-12 shrink-0">
+            <AvatarImage src={s.photoUrl || s.user?.avatarUrl || undefined} />
+            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+              {staffName(s).charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0">
+            <p className="font-medium text-foreground">{staffName(s)}</p>
+            {s.bio && <p className="text-xs text-muted-foreground line-clamp-1">{s.bio}</p>}
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="font-heading text-3xl font-semibold mb-6">Онлайн-запись</h1>
@@ -217,91 +289,73 @@ export default function BookingWizard({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
 
-          {/* ── Шаг 1: Выбор мастера ── */}
-          {step === 0 && (
+          {/* ══ ФЛОУ: МАСТЕР → УСЛУГА ══ */}
+
+          {/* Шаг 0 (master): Выбор мастера */}
+          {flow === 'master' && step === 0 && (
             <div>
               <h2 className="text-lg font-semibold mb-4">Выберите мастера</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {staffList.map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedStaff(s);
-                      setSelectedServices([]);
-                      setSelectedDate(null);
-                      setSelectedTime(null);
-                    }}
-                    className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
-                      selectedStaff?.id === s.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <Avatar className="w-12 h-12 shrink-0">
-                      <AvatarImage src={s.photoUrl || s.user?.avatarUrl || undefined} />
-                      <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                        {staffName(s).charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0">
-                      <p className="font-medium text-foreground">{staffName(s)}</p>
-                      {s.bio && (
-                        <p className="text-xs text-muted-foreground line-clamp-1">{s.bio}</p>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
+              {renderStaffList(staffList)}
               <Button className="mt-6" disabled={!selectedStaff} onClick={() => setStep(1)}>
                 Далее →
               </Button>
             </div>
           )}
 
-          {/* ── Шаг 2: Выбор услуг ── */}
-          {step === 1 && (
+          {/* Шаг 1 (master): Выбор услуг мастера */}
+          {flow === 'master' && step === 1 && (
             <div>
               <h2 className="text-lg font-semibold mb-4">Выберите услуги</h2>
-              {staffServices.length === 0 ? (
-                <p className="text-muted-foreground">У мастера нет привязанных услуг</p>
-              ) : (
-                <div className="space-y-2">
-                  {staffServices.map((svc) => {
-                    const isSelected = !!selectedServices.find((s) => s.id === svc.id);
-                    return (
-                      <button
-                        key={svc.id}
-                        type="button"
-                        onClick={() => toggleService(svc)}
-                        className={`w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all ${
-                          isSelected
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-primary/50'
-                        }`}
-                      >
-                        <div>
-                          <p className="font-medium text-foreground">{svc.name}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{svc.duration} мин</p>
-                        </div>
-                        <span className="font-semibold text-primary shrink-0 ml-4">
-                          {Number(svc.price).toLocaleString('ru')} ₽
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+              {staffServices.length === 0
+                ? <p className="text-muted-foreground">У мастера нет привязанных услуг</p>
+                : renderServiceList(staffServices)
+              }
               <div className="flex gap-3 mt-6">
                 <Button variant="outline" onClick={() => setStep(0)}>← Назад</Button>
-                <Button disabled={selectedServices.length === 0} onClick={() => setStep(2)}>
-                  Далее →
-                </Button>
+                <Button disabled={selectedServices.length === 0} onClick={() => setStep(2)}>Далее →</Button>
               </div>
             </div>
           )}
 
-          {/* ── Шаг 3: Дата и время ── */}
+          {/* ══ ФЛОУ: УСЛУГА → МАСТЕР ══ */}
+
+          {/* Шаг 0 (service): Выбор услуг из всего каталога бизнеса */}
+          {flow === 'service' && step === 0 && (
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Выберите услугу</h2>
+              {allServices.length === 0
+                ? <p className="text-muted-foreground">Услуги ещё не добавлены</p>
+                : renderServiceList(allServices)
+              }
+              <Button
+                className="mt-6"
+                disabled={selectedServices.length === 0}
+                onClick={() => { setSelectedStaff(null); setStep(1); }}
+              >
+                Далее →
+              </Button>
+            </div>
+          )}
+
+          {/* Шаг 1 (service): Выбор мастера из тех, кто оказывает выбранные услуги */}
+          {flow === 'service' && step === 1 && (
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Выберите мастера</h2>
+              {eligibleStaff.length === 0 ? (
+                <p className="text-muted-foreground">
+                  Нет мастеров, которые оказывают все выбранные услуги
+                </p>
+              ) : (
+                renderStaffList(eligibleStaff)
+              )}
+              <div className="flex gap-3 mt-6">
+                <Button variant="outline" onClick={() => setStep(0)}>← Назад</Button>
+                <Button disabled={!selectedStaff} onClick={() => setStep(2)}>Далее →</Button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Шаг 2: Дата и время (оба флоу) ── */}
           {step === 2 && (
             <div>
               <h2 className="text-lg font-semibold mb-4">Выберите дату</h2>
@@ -345,7 +399,7 @@ export default function BookingWizard({
             </div>
           )}
 
-          {/* ── Шаг 4: Контакты ── */}
+          {/* ── Шаг 3: Контакты (оба флоу) ── */}
           {step === 3 && (
             <div>
               <h2 className="text-lg font-semibold mb-4">Ваши контакты</h2>
@@ -380,7 +434,7 @@ export default function BookingWizard({
             </div>
           )}
 
-          {/* ── Шаг 5: Подтверждение ── */}
+          {/* ── Шаг 4: Подтверждение (оба флоу) ── */}
           {step === 4 && (
             <div>
               <h2 className="text-lg font-semibold mb-4">Подтвердите запись</h2>

@@ -48,62 +48,63 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Liora Design System — Purple Premium Palette (ТЗ раздел 21) */
+/* Liora Design System — Warm Editorial Palette
+   Cream #F4EFE6 · Forest Green #2D4A3E · Terracotta #B86A4B */
 :root {
-  /* Фон страницы — светло-лавандовый #F7F4FD */
-  --background: oklch(0.971 0.012 295);
-  /* Основной текст — почти чёрный с фиолетовым оттенком #1A1A2E */
-  --foreground: oklch(0.17 0.04 280);
+  /* Фон страницы — тёплый кремовый #F4EFE6 */
+  --background: oklch(0.953 0.019 86);
+  /* Основной текст — тёмно-бутылочный #1F2A24 */
+  --foreground: oklch(0.196 0.039 155);
 
-  /* Карточки — белые с лёгким фиолетовым оттенком */
-  --card: oklch(0.99 0.005 295);
-  --card-foreground: oklch(0.17 0.04 280);
+  /* Карточки — чуть светлее фона, почти белый #FBF8F2 */
+  --card: oklch(0.978 0.012 91);
+  --card-foreground: oklch(0.196 0.039 155);
 
-  --popover: oklch(0.99 0.005 295);
-  --popover-foreground: oklch(0.17 0.04 280);
+  --popover: oklch(0.978 0.012 91);
+  --popover-foreground: oklch(0.196 0.039 155);
 
-  /* Primary — глубокий фиолетовый #1E1145, текст на нём белый */
-  --primary: oklch(0.19 0.13 295);
-  --primary-foreground: oklch(0.98 0.005 295);
+  /* Primary — бутылочно-зелёный #2D4A3E, текст на нём кремовый */
+  --primary: oklch(0.308 0.068 162);
+  --primary-foreground: oklch(0.978 0.012 91);
 
-  /* Secondary — средний фиолетовый #4A2C8F */
-  --secondary: oklch(0.34 0.16 290);
-  --secondary-foreground: oklch(0.98 0.005 295);
+  /* Secondary — терракота #B86A4B */
+  --secondary: oklch(0.577 0.102 39);
+  --secondary-foreground: oklch(0.978 0.012 91);
 
-  /* Muted — бледно-лавандовый для второстепенного текста */
-  --muted: oklch(0.94 0.02 295);
-  --muted-foreground: oklch(0.50 0.07 290);
+  /* Muted — тёплый бежевый #EAE3D5 */
+  --muted: oklch(0.905 0.025 78);
+  --muted-foreground: oklch(0.567 0.017 77);
 
-  /* Accent — средний фиолетовый #7B5EA7 */
-  --accent: oklch(0.52 0.12 295);
-  --accent-foreground: oklch(0.98 0.005 295);
+  /* Accent — мягкая терракота #E8C9B5 */
+  --accent: oklch(0.843 0.046 43);
+  --accent-foreground: oklch(0.196 0.039 155);
 
   --destructive: oklch(0.577 0.245 27.325);
 
-  /* Borders & inputs */
-  --border: oklch(0.88 0.03 290);
-  --input: oklch(0.88 0.03 290);
-  --ring: oklch(0.52 0.12 295);
+  /* Borders & inputs — тёплый песок #D9CBB0 */
+  --border: oklch(0.832 0.037 78);
+  --input: oklch(0.832 0.037 78);
+  --ring: oklch(0.308 0.068 162);
 
   /* Charts */
-  --chart-1: oklch(0.52 0.12 295);
-  --chart-2: oklch(0.34 0.16 290);
-  --chart-3: oklch(0.19 0.13 295);
-  --chart-4: oklch(0.77 0.07 295);
-  --chart-5: oklch(0.92 0.025 295);
+  --chart-1: oklch(0.308 0.068 162);
+  --chart-2: oklch(0.577 0.102 39);
+  --chart-3: oklch(0.224 0.066 162);
+  --chart-4: oklch(0.843 0.046 43);
+  --chart-5: oklch(0.905 0.025 78);
 
   /* Скруглённые углы — средние */
   --radius: 0.75rem;
 
-  /* Sidebar */
-  --sidebar: oklch(0.19 0.13 295);
-  --sidebar-foreground: oklch(0.94 0.02 295);
-  --sidebar-primary: oklch(0.77 0.07 295);
-  --sidebar-primary-foreground: oklch(0.19 0.13 295);
-  --sidebar-accent: oklch(0.27 0.14 292);
-  --sidebar-accent-foreground: oklch(0.94 0.02 295);
-  --sidebar-border: oklch(0.27 0.14 292);
-  --sidebar-ring: oklch(0.52 0.12 295);
+  /* Sidebar — глубокий forest #1E332A */
+  --sidebar: oklch(0.224 0.066 162);
+  --sidebar-foreground: oklch(0.905 0.025 78);
+  --sidebar-primary: oklch(0.843 0.046 43);
+  --sidebar-primary-foreground: oklch(0.224 0.066 162);
+  --sidebar-accent: oklch(0.270 0.065 162);
+  --sidebar-accent-foreground: oklch(0.905 0.025 78);
+  --sidebar-border: oklch(0.270 0.065 162);
+  --sidebar-ring: oklch(0.577 0.102 39);
 }
 
 .dark {

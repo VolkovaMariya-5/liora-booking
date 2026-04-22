@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Star, Phone } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StaffCard } from '@/components/staff/StaffCard';
 import { BUSINESS_CATEGORIES } from '@/lib/constants';
@@ -139,6 +141,16 @@ export default async function BusinessPage({ params }: PageProps) {
               {business.description}
             </p>
           )}
+
+          {/* Два флоу записи */}
+          <div className="flex flex-wrap gap-3 mt-4">
+            <Button size="sm" render={<Link href={`/businesses/${business.slug}/book?flow=service`} />}>
+              Записаться по услуге
+            </Button>
+            <Button size="sm" variant="outline" render={<Link href={`/businesses/${business.slug}/book`} />}>
+              Выбрать мастера
+            </Button>
+          </div>
         </div>
       </div>
 

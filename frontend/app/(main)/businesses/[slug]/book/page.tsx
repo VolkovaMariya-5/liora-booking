@@ -22,11 +22,11 @@ interface PageProps {
 }
 
 // /businesses/[slug]/book — страница онлайн-записи
-// Требует авторизации; неавторизованных перенаправляет на /auth/login
-export default async function BookPage({ params }: PageProps) {
-  // Проверяем авторизацию — запись требует аккаунта
+// Поддерживает два флоу: ?flow=service (услуга→мастер) и по умолчанию (мастер→услуга)
+export default async function BookPage({ params, searchParams }: PageProps) {
   const session = await auth();
   const { slug } = await params;
+  const sp = await searchParams;
 
   if (!session?.user) {
     redirect(`/auth/login?redirect=/businesses/${slug}/book`);
@@ -35,13 +35,19 @@ export default async function BookPage({ params }: PageProps) {
   const business = await fetchBookingData(slug);
   if (!business) notFound();
 
+  // Собираем дедуплицированный список всех услуг бизнеса для флоу "по услуге"
+  const allServices = business.services ?? [];
+  const flow = sp.flow === 'service' ? 'service' : 'master';
+
   return (
     <BookingWizard
       businessSlug={slug}
       businessId={business.id}
       businessName={business.name}
       staffList={business.staff ?? []}
+      allServices={allServices}
       maxAdvanceDays={business.maxAdvanceBookingDays ?? 30}
+      flow={flow}
     />
   );
 }

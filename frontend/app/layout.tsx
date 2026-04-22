@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Cormorant_Garamond, Inter } from 'next/font/google';
+import { Cormorant_Garamond, Inter_Tight } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
@@ -11,10 +11,11 @@ const cormorant = Cormorant_Garamond({
   weight: ['300', '400', '500', '600', '700'],
 });
 
-// Inter — основной UI шрифт для текста, форм, кнопок
-const inter = Inter({
+// Inter Tight — основной UI шрифт (аналог TT Norms из дизайн-системы Liora)
+const interTight = Inter_Tight({
   variable: '--font-sans',
   subsets: ['latin', 'cyrillic'],
+  weight: ['300', '400', '500', '600'],
 });
 
 export const metadata: Metadata = {
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${cormorant.variable} ${inter.variable} h-full antialiased`}>
+    <html lang="ru" className={`${cormorant.variable} ${interTight.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {/* SessionProvider делает хук useSession() доступным во всех Client Components */}
         <SessionProvider>

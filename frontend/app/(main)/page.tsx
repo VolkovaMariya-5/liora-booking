@@ -1,246 +1,377 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { BUSINESS_CATEGORIES } from '@/lib/constants';
 import { api } from '@/lib/api';
-import { BusinessCard } from '@/components/businesses/BusinessCard';
-import { ArrowRight, ChevronRight } from 'lucide-react';
+import { BUSINESS_CATEGORIES } from '@/lib/constants';
+import { ChevronRight, Star } from 'lucide-react';
 
 // Лендинг / — главная страница Liora
-// Секции: Hero, Как это работает, Категории, Популярные бизнесы, Для владельцев
+// Структура: Hero (split) · Bento-категории · Editorial feature · Журнал мастеров · B2B-секция
 
-// Получаем 6 популярных бизнесов (Server Component)
 async function getPopularBusinesses() {
   try {
-    const res = await api.get('/businesses?limit=6&page=1');
+    const res = await api.get('/businesses?limit=8&page=1');
     return res.data?.data ?? [];
   } catch {
     return [];
   }
 }
 
+// Emoji-карта категорий для журнала мастеров
+const CAT_ICON = Object.fromEntries(BUSINESS_CATEGORIES.map((c) => [c.value, c.icon]));
+
+const IMG = {
+  hair:    'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=900&q=80',
+  nails:   'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=700&q=80',
+  lash:    'https://images.unsplash.com/photo-1583241800698-9c3e14a38acb?w=700&q=80',
+  barber:  'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=700&q=80',
+  face:    'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=700&q=80',
+  spa:     'https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=700&q=80',
+  fitness: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=700&q=80',
+  brows:   'https://images.unsplash.com/photo-1596704017254-9b121068fb31?w=700&q=80',
+  master:  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80',
+};
+
 export default async function HomePage() {
   const businesses = await getPopularBusinesses();
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col bg-background">
 
       {/* ─── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[88vh] flex flex-col items-center justify-center text-center px-4 sm:px-8 py-24 overflow-hidden">
-        {/* Тонкое радиальное свечение сверху — едва заметный фиолетовый отблеск */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, oklch(0.52 0.12 295 / 0.07) 0%, transparent 70%)' }}
-        />
+      <section className="px-5 sm:px-10 lg:px-16 pt-14 pb-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-10 lg:gap-14 items-end">
 
-        {/* Метка-пилюля */}
-        <div className="mb-10 inline-flex items-center gap-2 border border-border rounded-full px-5 py-1.5 text-xs tracking-widest uppercase text-muted-foreground">
-          Онлайн-запись к мастерам
+          {/* Текст */}
+          <div>
+            <div className="text-[11px] tracking-[0.18em] uppercase text-muted-foreground mb-5">
+              — ваша запись, без звонков
+            </div>
+            <h1
+              className="font-heading font-normal text-foreground leading-[0.97] mb-5"
+              style={{ fontSize: 'clamp(2.8rem, 7.5vw, 6rem)', letterSpacing: '-0.03em' }}
+            >
+              Мастера и салоны<br />
+              <em className="italic text-primary">вашего города</em>
+            </h1>
+            <p className="text-base text-muted-foreground leading-relaxed max-w-md">
+              Записывайтесь к проверенным мастерам в несколько кликов.
+              Рейтинг, живые работы и реальные отзывы — в одном месте.
+            </p>
+          </div>
+
+          {/* Поисковая карточка */}
+          <div className="bg-primary text-primary-foreground rounded-2xl p-6 shadow-2xl">
+            <div className="text-[10px] tracking-[0.18em] uppercase text-primary-foreground/55 mb-4">
+              Найти запись
+            </div>
+            <div className="flex flex-col gap-3">
+              {/* Услуга */}
+              <div className="bg-white/10 rounded-xl px-4 py-3">
+                <div className="text-[9px] tracking-[0.1em] uppercase text-primary-foreground/50 mb-1">
+                  Услуга или мастер
+                </div>
+                <div className="text-sm text-primary-foreground/75">
+                  стрижка, окрашивание, маникюр…
+                </div>
+              </div>
+              {/* Когда + Где */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/10 rounded-xl px-4 py-3">
+                  <div className="text-[9px] tracking-[0.1em] uppercase text-primary-foreground/50 mb-1">Когда</div>
+                  <div className="text-sm text-primary-foreground/75">Сегодня вечером</div>
+                </div>
+                <div className="bg-white/10 rounded-xl px-4 py-3">
+                  <div className="text-[9px] tracking-[0.1em] uppercase text-primary-foreground/50 mb-1">Где</div>
+                  <div className="text-sm text-primary-foreground/75">Рядом со мной</div>
+                </div>
+              </div>
+              {/* Кнопка */}
+              <Link
+                href="/businesses"
+                className="mt-1 block text-center bg-secondary hover:opacity-90 text-secondary-foreground py-3.5 rounded-xl text-sm font-medium transition-opacity"
+              >
+                Показать варианты →
+              </Link>
+            </div>
+          </div>
         </div>
-
-        {/* Главный заголовок — oversized editorial serif */}
-        {/* font-light (300) на Cormorant Garamond даёт изящный люксовый вид */}
-        <h1
-          className="font-heading font-light text-foreground mb-8 leading-[0.92] tracking-[-0.02em] max-w-5xl"
-          style={{ fontSize: 'clamp(3.5rem, 10vw, 8.5rem)' }}
-        >
-          Красота начинается<br />
-          <em className="text-primary not-italic">с одного клика</em>
-        </h1>
-
-        {/* Подзаголовок */}
-        <p className="text-base sm:text-lg text-muted-foreground max-w-md leading-relaxed mb-12">
-          Находите лучших мастеров рядом с вами и записывайтесь онлайн — без ожидания, в любое время.
-        </p>
-
-        {/* CTA-кнопки */}
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <Button
-            size="lg"
-            className="px-9 h-12 text-sm tracking-wide rounded-full"
-            render={<Link href="/businesses" />}
-          >
-            Найти мастера
-            <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="px-9 h-12 text-sm tracking-wide rounded-full"
-            render={<Link href="/auth/register-business" />}
-          >
-            Я — владелец бизнеса
-          </Button>
-        </div>
-
-        {/* Тонкая разделительная линия снизу */}
-        <div className="absolute bottom-0 left-[8%] right-[8%] h-px bg-border" />
       </section>
 
-      {/* ─── Как это работает ─────────────────────────────────────────── */}
-      <section className="py-24 sm:py-32">
-        <div className="max-w-6xl mx-auto px-4 sm:px-8">
+      {/* ─── Bento-категории ─────────────────────────────────────────── */}
+      <section className="px-5 sm:px-10 lg:px-16 py-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-baseline justify-between mb-5">
+            <h2
+              className="font-heading font-normal text-foreground"
+              style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)', letterSpacing: '-0.02em' }}
+            >
+              Категории
+            </h2>
+            <span className="text-sm text-muted-foreground hidden sm:block">10 направлений · 840+ мест</span>
+          </div>
 
-          {/* Верхний ярлык + заголовок секции */}
-          <p className="text-xs tracking-widest uppercase text-muted-foreground mb-4">
-            Как это работает
-          </p>
-          <h2 className="font-heading font-light text-foreground mb-16 sm:mb-20 max-w-xl leading-tight"
-            style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)' }}
-          >
-            Записаться просто
-          </h2>
+          {/* Bento grid — 6 колонок на десктопе, 2 на мобиле */}
+          <div className="grid grid-cols-2 lg:grid-cols-6 auto-rows-[110px] lg:auto-rows-[150px] gap-3">
 
-          {/* Три шага — разделены вертикальными линиями на десктопе */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border">
-            {[
-              {
-                num: '01',
-                title: 'Выберите мастера',
-                desc: 'Найдите специалиста по категории, городу или имени. Смотрите услуги и цены.',
-              },
-              {
-                num: '02',
-                title: 'Выберите время',
-                desc: 'Выберите удобную дату и свободный слот — система покажет реальное расписание.',
-              },
-              {
-                num: '03',
-                title: 'Подтвердите запись',
-                desc: 'Получите подтверждение в личном кабинете. Мастер уже ждёт!',
-              },
-            ].map((item) => (
-              <div
-                key={item.num}
-                className="px-0 sm:px-10 py-10 sm:py-0 first:sm:pl-0 last:sm:pr-0"
-              >
-                {/* Крупный декоративный номер в Cormorant */}
-                <span
-                  className="font-heading font-light text-primary/25 leading-none block mb-6"
-                  style={{ fontSize: 'clamp(4rem, 8vw, 6rem)' }}
-                >
-                  {item.num}
-                </span>
-                <h3 className="font-heading font-medium text-foreground mb-3 text-xl sm:text-2xl">
-                  {item.title}
-                </h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {item.desc}
-                </p>
+            {/* Большая плитка — Красота (3 cols, 2 rows на десктопе) */}
+            <Link
+              href="/businesses?category=HAIR_SALON"
+              className="col-span-2 lg:col-span-3 row-span-2 rounded-2xl overflow-hidden relative group"
+            >
+              <Image src={IMG.hair} alt="Красота" fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
+              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-foreground/65" />
+              <div className="absolute left-5 bottom-5 text-white">
+                <div className="font-heading text-3xl lg:text-4xl font-normal">Красота</div>
+                <div className="text-xs text-white/75 mt-1">Парикмахерские, бровисты, визажисты · 312 мест</div>
               </div>
+              <div className="absolute right-4 top-4 bg-background/90 text-foreground text-[10px] font-medium px-2.5 py-1 rounded-full">
+                ⭐ Популярно
+              </div>
+            </Link>
+
+            {/* Средняя плитка — Ногти */}
+            <Link
+              href="/businesses?category=NAIL_STUDIO"
+              className="col-span-2 lg:col-span-3 bg-accent/15 rounded-2xl overflow-hidden relative flex group hover:bg-accent/20 transition-colors"
+            >
+              <div className="p-4 lg:p-5 flex-1">
+                <div className="font-heading font-normal text-foreground text-xl lg:text-2xl">Ногти</div>
+                <div className="text-xs text-muted-foreground mt-1">186 мест</div>
+              </div>
+              <div className="w-24 lg:w-32 relative flex-shrink-0">
+                <Image src={IMG.nails} alt="Ногти" fill className="object-cover" unoptimized />
+              </div>
+            </Link>
+
+            {/* Средняя плитка — Ресницы */}
+            <Link
+              href="/businesses?category=LASH_STUDIO"
+              className="col-span-2 lg:col-span-3 bg-muted rounded-2xl overflow-hidden relative flex group hover:bg-muted/70 transition-colors"
+            >
+              <div className="p-4 lg:p-5 flex-1">
+                <div className="font-heading font-normal text-foreground text-xl lg:text-2xl">Ресницы</div>
+                <div className="text-xs text-muted-foreground mt-1">94 места</div>
+              </div>
+              <div className="w-24 lg:w-32 relative flex-shrink-0">
+                <Image src={IMG.lash} alt="Ресницы" fill className="object-cover" unoptimized />
+              </div>
+            </Link>
+
+            {/* Маленькие плитки — 6 штук */}
+            {[
+              { n: 'Брови',  c: 72,  href: '/businesses?category=BEAUTY_SALON', img: IMG.brows   },
+              { n: 'Барбер', c: 58,  href: '/businesses?category=BARBERSHOP',   img: IMG.barber  },
+              { n: 'Лицо',   c: 104, href: '/businesses?category=BEAUTY_SALON', img: IMG.face    },
+              { n: 'Фитнес', c: 68,  href: '/businesses?category=FITNESS',      img: IMG.fitness },
+              { n: 'Спа',    c: 29,  href: '/businesses?category=SPA',          img: IMG.spa     },
+              { n: 'Все',    c: 840, href: '/businesses',                       img: IMG.master  },
+            ].map((c) => (
+              <Link
+                key={c.n}
+                href={c.href}
+                className="col-span-1 bg-card rounded-2xl overflow-hidden p-3 lg:p-4 flex flex-col justify-between border border-border hover:border-primary/40 transition-colors group cursor-pointer"
+              >
+                <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-full overflow-hidden relative flex-shrink-0">
+                  <Image src={c.img} alt={c.n} fill className="object-cover" unoptimized />
+                </div>
+                <div>
+                  <div className="text-xs lg:text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {c.n}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">{c.c} мест</div>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ─── Категории ───────────────────────────────────────────────── */}
-      <section className="py-24 sm:py-32 border-t border-border">
-        <div className="max-w-6xl mx-auto px-4 sm:px-8">
-          <div className="flex items-end justify-between mb-12 sm:mb-16">
-            <div>
-              <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
-                Все направления
-              </p>
+      {/* ─── Editorial feature — цитата + слоты ─────────────────────── */}
+      <section className="px-5 sm:px-10 lg:px-16 py-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-primary text-primary-foreground rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-[1.1fr_1fr]">
+            <div className="p-8 lg:p-14">
+              <div className="inline-block text-[10px] tracking-[0.15em] uppercase px-3 py-1 border border-primary-foreground/30 rounded-full mb-7 text-primary-foreground/65">
+                Премиум · апрель
+              </div>
               <h2
-                className="font-heading font-light text-foreground leading-tight"
-                style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
+                className="font-heading font-normal text-primary-foreground leading-tight mb-8"
+                style={{ fontSize: 'clamp(1.8rem, 4vw, 3.2rem)', letterSpacing: '-0.025em' }}
               >
-                Категории
+                «Клиенты возвращаются<br />
+                не за услугой —<br />
+                <em className="italic text-primary-foreground/55">за чувством»</em>
               </h2>
+
+              {/* Автор */}
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-11 h-11 rounded-full overflow-hidden relative flex-shrink-0">
+                  <Image src={IMG.master} alt="Анна Соколова" fill className="object-cover" unoptimized />
+                </div>
+                <div>
+                  <div className="text-sm font-medium">Анна Соколова</div>
+                  <div className="text-xs text-primary-foreground/55">Топ-колорист · студия Orchid</div>
+                </div>
+              </div>
+
+              {/* Свободные слоты */}
+              <div className="pt-5 border-t border-primary-foreground/20">
+                <div className="text-[11px] text-primary-foreground/50 mb-3 tracking-wide">Свободные окна на неделе</div>
+                <div className="flex flex-wrap gap-2">
+                  {['Ср · 14:30', 'Чт · 11:00', 'Пт · 18:00'].map((s) => (
+                    <div
+                      key={s}
+                      className="bg-white/10 border border-white/20 px-3.5 py-2 rounded-lg text-xs"
+                    >
+                      {s}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-            <Link
-              href="/businesses"
-              className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+
+            {/* Фото — только десктоп */}
+            <div className="hidden lg:block relative min-h-[420px]">
+              <Image src={IMG.master} alt="Мастер" fill className="object-cover" unoptimized />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── Журнал мастеров — табличный список ─────────────────────── */}
+      <section className="px-5 sm:px-10 lg:px-16 py-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-baseline justify-between mb-5">
+            <h2
+              className="font-heading font-normal text-foreground"
+              style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)', letterSpacing: '-0.02em' }}
             >
-              Смотреть все <ChevronRight className="w-4 h-4" />
+              Популярные салоны
+            </h2>
+            <Link href="/businesses" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+              Показать всё <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            {BUSINESS_CATEGORIES.map((cat) => (
-              <Link
-                key={cat.value}
-                href={`/businesses?category=${cat.value}`}
-                className="group flex flex-col gap-4 p-6 rounded-2xl border border-border hover:border-primary/40 hover:bg-primary/[0.03] transition-all duration-200"
-              >
-                <span className="text-3xl">{cat.icon}</span>
-                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors leading-snug">
-                  {cat.label}
-                </span>
-              </Link>
-            ))}
+          <div className="bg-card rounded-2xl border border-border overflow-hidden">
+            {businesses.length > 0 ? (
+              businesses.map((b: any, i: number) => (
+                <Link
+                  key={b.id}
+                  href={`/businesses/${b.slug}`}
+                  className="flex items-center gap-4 px-5 lg:px-7 py-4 border-b last:border-b-0 border-border hover:bg-muted/40 transition-colors"
+                >
+                  {/* Порядковый номер */}
+                  <span className="hidden sm:block font-heading text-xl text-muted-foreground/40 font-normal w-8 flex-shrink-0">
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+
+                  {/* Аватар */}
+                  <div className="w-11 h-11 rounded-full overflow-hidden relative bg-muted flex-shrink-0">
+                    {b.logoUrl ? (
+                      <Image src={b.logoUrl} alt={b.name} fill className="object-cover" unoptimized />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-lg">
+                        {CAT_ICON[b.category] || '🏪'}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Название + специализация */}
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold text-foreground truncate">{b.name}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5 truncate">
+                      {BUSINESS_CATEGORIES.find((c) => c.value === b.category)?.label ?? b.category} · {b.city}
+                    </div>
+                  </div>
+
+                  {/* Рейтинг */}
+                  {b.avgRating != null && (
+                    <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground flex-shrink-0">
+                      <Star className="w-3.5 h-3.5 fill-primary text-primary" />
+                      <span>{b.avgRating}</span>
+                      <span className="text-muted-foreground/50">· {b.reviewCount || 0}</span>
+                    </div>
+                  )}
+
+                  {/* Кнопка */}
+                  <div className="bg-primary text-primary-foreground text-xs font-medium px-4 py-2 rounded-lg flex-shrink-0">
+                    Записаться →
+                  </div>
+                </Link>
+              ))
+            ) : (
+              <div className="py-16 text-center text-sm text-muted-foreground">
+                Данные загружаются…
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-center mt-7">
+            <Button variant="outline" size="lg" className="rounded-full px-10" render={<Link href="/businesses" />}>
+              Смотреть все места
+            </Button>
           </div>
         </div>
       </section>
 
-      {/* ─── Популярные бизнесы ──────────────────────────────────────── */}
-      {businesses.length > 0 && (
-        <section className="py-24 sm:py-32 border-t border-border">
-          <div className="max-w-6xl mx-auto px-4 sm:px-8">
-            <div className="flex items-end justify-between mb-12 sm:mb-16">
-              <div>
-                <p className="text-xs tracking-widest uppercase text-muted-foreground mb-3">
-                  Рекомендуем
-                </p>
-                <h2
-                  className="font-heading font-light text-foreground leading-tight"
-                  style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}
-                >
-                  Популярные места
-                </h2>
+      {/* ─── Для бизнеса ─────────────────────────────────────────────── */}
+      <section className="px-5 sm:px-10 lg:px-16 py-8 pb-14">
+        <div className="max-w-7xl mx-auto">
+          <div className="bg-primary text-primary-foreground rounded-3xl p-8 lg:p-16 grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-10 lg:gap-16 items-center">
+            <div>
+              <div className="text-[10px] tracking-[0.18em] uppercase text-primary-foreground/45 mb-4">
+                Для владельцев салонов
               </div>
-              <Link
-                href="/businesses"
-                className="hidden sm:flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              <h2
+                className="font-heading font-normal text-primary-foreground leading-tight mb-5"
+                style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', letterSpacing: '-0.03em' }}
               >
-                Все места <ChevronRight className="w-4 h-4" />
-              </Link>
+                Ваш салон<br />
+                <em className="italic">заслуживает</em><br />
+                большего
+              </h2>
+              <p className="text-primary-foreground/60 leading-relaxed max-w-md mb-8">
+                Управляйте записями, мастерами и расписанием из единого кабинета.
+                Без комиссий и скрытых платежей.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/auth/register-business"
+                  className="bg-primary-foreground text-primary text-sm font-medium px-6 py-3.5 rounded-full hover:bg-primary-foreground/90 transition-colors"
+                >
+                  Подключить бесплатно →
+                </Link>
+                <Link
+                  href="/businesses"
+                  className="text-primary-foreground/65 border border-primary-foreground/25 text-sm font-medium px-6 py-3.5 rounded-full hover:border-primary-foreground/50 transition-colors"
+                >
+                  Посмотреть демо
+                </Link>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {businesses.map((b: any) => (
-                <BusinessCard
-                  key={b.id}
-                  id={b.id}
-                  name={b.name}
-                  slug={b.slug}
-                  category={b.category}
-                  city={b.city}
-                  logoUrl={b.logoUrl}
-                  avgRating={b.avgRating}
-                  reviewCount={b.reviewCount}
-                  staffCount={b.staffCount}
-                  description={b.description}
-                />
+            {/* Статистика */}
+            <div className="grid grid-cols-2 gap-5">
+              {[
+                { val: '+38%',   desc: 'Рост загрузки мастеров в первый месяц' },
+                { val: '0 ₽',    desc: 'Комиссий с записей клиентов. Никогда.' },
+                { val: '24/7',   desc: 'Клиенты записываются даже ночью — без вас' },
+                { val: '12 мин', desc: 'Среднее время на подключение салона' },
+              ].map((s) => (
+                <div key={s.val} className="pt-5 border-t border-primary-foreground/20">
+                  <div
+                    className="font-heading font-normal text-primary-foreground mb-2"
+                    style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)', letterSpacing: '-0.02em' }}
+                  >
+                    {s.val}
+                  </div>
+                  <div className="text-xs text-primary-foreground/50 leading-snug">{s.desc}</div>
+                </div>
               ))}
             </div>
           </div>
-        </section>
-      )}
-
-      {/* ─── Для владельцев бизнеса ──────────────────────────────────── */}
-      {/* Тёмная секция (primary) — сильный контраст, финальный призыв к действию */}
-      <section className="py-24 sm:py-32 bg-primary text-primary-foreground">
-        <div className="max-w-4xl mx-auto px-4 sm:px-8 text-center">
-          <p className="text-xs tracking-widest uppercase text-primary-foreground/50 mb-6">
-            Для бизнеса
-          </p>
-          <h2
-            className="font-heading font-light text-primary-foreground mb-6 leading-[0.95]"
-            style={{ fontSize: 'clamp(2.8rem, 7vw, 6rem)' }}
-          >
-            Ведёте салон<br />или студию?
-          </h2>
-          <p className="text-primary-foreground/65 text-lg mb-10 leading-relaxed max-w-md mx-auto">
-            Подключите ваш бизнес к Liora — управляйте записями, мастерами и расписанием из единого кабинета. Бесплатно.
-          </p>
-          <Button
-            size="lg"
-            className="px-10 h-12 text-sm tracking-wide rounded-full bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-            render={<Link href="/auth/register-business" />}
-          >
-            Добавить бизнес
-            <ArrowRight className="ml-2 w-4 h-4" />
-          </Button>
         </div>
       </section>
 
