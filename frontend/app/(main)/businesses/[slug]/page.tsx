@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { MapPin, Star, Phone } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { formatPrice } from '@/lib/constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StaffCard } from '@/components/staff/StaffCard';
 import { BUSINESS_CATEGORIES } from '@/lib/constants';
@@ -197,19 +198,26 @@ export default async function BusinessPage({ params }: PageProps) {
           ) : (
             <div className="divide-y divide-border rounded-xl border border-border overflow-hidden">
               {business.services.map((svc) => (
-                <div key={svc.id} className="flex items-center justify-between px-4 py-3 bg-card">
-                  <div>
+                <div key={svc.id} className="flex items-center justify-between px-4 py-3 bg-card gap-4">
+                  <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground">{svc.name}</p>
                     {svc.description && (
                       <p className="text-xs text-muted-foreground mt-0.5">{svc.description}</p>
                     )}
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {svc.duration} мин
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{svc.duration} мин</p>
                   </div>
-                  <span className="text-primary font-semibold shrink-0 ml-4">
-                    {Number(svc.price).toLocaleString('ru')} ₽
-                  </span>
+                  <div className="flex items-center gap-4 shrink-0">
+                    <span className="text-primary font-semibold">
+                      {formatPrice(svc.price, business.country)}
+                    </span>
+                    <Button
+                      size="sm"
+                      className="rounded-full"
+                      render={<Link href={`/businesses/${business.slug}/book?flow=service&serviceId=${svc.id}`} />}
+                    >
+                      Записаться
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

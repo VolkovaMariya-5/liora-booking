@@ -1,7 +1,5 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { EmptyState } from '@/components/shared/EmptyState';
-import { Scissors } from 'lucide-react';
 import ServicesList from './ServicesList';
 
 interface Service {
@@ -11,6 +9,17 @@ interface Service {
   price: number;
   duration: number;
   isActive: boolean;
+}
+
+async function fetchBusinessCountry(token: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/manage/settings`, {
+      headers: { Authorization: `Bearer ${token}` }, cache: 'no-store',
+    });
+    if (!res.ok) return null;
+    const b = await res.json();
+    return b.country ?? null;
+  } catch { return null; }
 }
 
 // Загружаем все услуги бизнеса (включая неактивные)
@@ -33,7 +42,10 @@ export default async function ManageServicesPage() {
   if (!session?.user) redirect('/auth/login');
   if ((session.user as any).role !== 'BUSINESS_ADMIN') redirect('/dashboard');
 
-  const services = await fetchServices(session.accessToken as string);
+  const [services, businessCountry] = await Promise.all([
+    fetchServices(session.accessToken as string),
+    fetchBusinessCountry(session.accessToken as string),
+  ]);
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8">
@@ -41,15 +53,7 @@ export default async function ManageServicesPage() {
         <h1 className="font-heading text-4xl font-semibold">Услуги</h1>
       </div>
 
-      {services.length === 0 ? (
-        <EmptyState
-          icon={Scissors}
-          title="Услуг пока нет"
-          description="Добавьте услуги, чтобы клиенты могли записываться"
-        />
-      ) : (
-        <ServicesList services={services} />
-      )}
+      <ServicesList services={services} businessCountry={businessCountry} />
     </div>
   );
 }

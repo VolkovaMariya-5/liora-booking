@@ -1,22 +1,30 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { api } from '@/lib/api';
 import { BUSINESS_CATEGORIES } from '@/lib/constants';
-import { ChevronRight, Star } from 'lucide-react';
+import { BusinessCard } from '@/components/businesses/BusinessCard';
+import { ChevronRight } from 'lucide-react';
+
+// Отключаем кэш — страница должна отдавать свежие ТОП Салоны после изменений в админке
+export const dynamic = 'force-dynamic';
 
 // Лендинг / — главная страница Liora
-// Структура: Hero (split) · Bento-категории · Editorial feature · Журнал мастеров · B2B-секция
 
-// Сначала пробуем ТОП (isFeatured=true), fallback — обычные
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
+// Используем fetch напрямую — api.ts использует getSession() (client-only), в Server Component падает
 async function getTopBusinesses() {
   try {
-    const res = await api.get('/businesses?featured=true&limit=8');
-    const items = res.data?.data ?? [];
+    const res = await fetch(`${API}/businesses?featured=true&limit=8`, { cache: 'no-store' });
+    if (!res.ok) throw new Error();
+    const json = await res.json();
+    const items = json?.data ?? [];
     if (items.length > 0) return items;
-    // Если ещё никто не помечен как ТОП — показываем обычные
-    const fallback = await api.get('/businesses?limit=8&page=1');
-    return fallback.data?.data ?? [];
+    // fallback — если никто не в ТОП, показываем обычные
+    const fallback = await fetch(`${API}/businesses?limit=8`, { cache: 'no-store' });
+    if (!fallback.ok) return [];
+    const fb = await fallback.json();
+    return fb?.data ?? [];
   } catch {
     return [];
   }
@@ -82,7 +90,7 @@ export default async function HomePage() {
           </div>
 
           {/* Bento grid — 6 колонок на десктопе, 2 на мобиле */}
-          <div className="grid grid-cols-2 lg:grid-cols-6 auto-rows-[110px] lg:auto-rows-[150px] gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-6 auto-rows-[140px] lg:auto-rows-[200px] gap-3">
 
             {/* Большая плитка — Красота (3 cols, 2 rows на десктопе) */}
             <Link
@@ -90,7 +98,7 @@ export default async function HomePage() {
               className="col-span-2 lg:col-span-3 row-span-2 rounded-2xl overflow-hidden relative group"
             >
               <Image src={IMG.hair} alt="Красота" fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
-              <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-foreground/65" />
+              <div className="absolute inset-0 bg-linear-to-br from-transparent via-transparent to-foreground/65" />
               <div className="absolute left-5 bottom-5 text-white">
                 <div className="font-heading text-3xl lg:text-4xl font-normal">Красота</div>
                 <div className="text-xs text-white/75 mt-1">Парикмахерские, бровисты, визажисты · 312 мест</div>
@@ -109,7 +117,7 @@ export default async function HomePage() {
                 <div className="font-heading font-normal text-foreground text-xl lg:text-2xl">Ногти</div>
                 <div className="text-xs text-muted-foreground mt-1">186 мест</div>
               </div>
-              <div className="w-24 lg:w-32 relative flex-shrink-0">
+              <div className="w-24 lg:w-32 relative shrink-0">
                 <Image src={IMG.nails} alt="Ногти" fill className="object-cover" unoptimized />
               </div>
             </Link>
@@ -123,12 +131,12 @@ export default async function HomePage() {
                 <div className="font-heading font-normal text-foreground text-xl lg:text-2xl">Ресницы</div>
                 <div className="text-xs text-muted-foreground mt-1">94 места</div>
               </div>
-              <div className="w-24 lg:w-32 relative flex-shrink-0">
+              <div className="w-24 lg:w-32 relative shrink-0">
                 <Image src={IMG.lash} alt="Ресницы" fill className="object-cover" unoptimized />
               </div>
             </Link>
 
-            {/* Маленькие плитки — 6 штук */}
+            {/* Маленькие плитки — полноэкранное фото с градиентом */}
             {[
               { n: 'Брови',  c: 72,  href: '/businesses?category=BEAUTY_SALON', img: IMG.brows   },
               { n: 'Барбер', c: 58,  href: '/businesses?category=BARBERSHOP',   img: IMG.barber  },
@@ -140,16 +148,19 @@ export default async function HomePage() {
               <Link
                 key={c.n}
                 href={c.href}
-                className="col-span-1 bg-card rounded-2xl overflow-hidden p-3 lg:p-4 flex flex-col justify-between border border-border hover:border-primary/40 transition-colors group cursor-pointer"
+                className="col-span-1 rounded-2xl overflow-hidden relative group"
               >
-                <div className="w-9 h-9 lg:w-11 lg:h-11 rounded-full overflow-hidden relative flex-shrink-0">
-                  <Image src={c.img} alt={c.n} fill className="object-cover" unoptimized />
-                </div>
-                <div>
-                  <div className="text-xs lg:text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {c.n}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">{c.c} мест</div>
+                <Image
+                  src={c.img}
+                  alt={c.n}
+                  fill
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-2 lg:p-3 text-white">
+                  <div className="text-xs lg:text-sm font-semibold leading-snug">{c.n}</div>
+                  <div className="text-[10px] text-white/70 mt-0.5">{c.c} мест</div>
                 </div>
               </Link>
             ))}
@@ -157,134 +168,43 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ─── Editorial feature — цитата + слоты ─────────────────────── */}
-      <section className="px-5 sm:px-10 lg:px-16 py-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="bg-primary text-primary-foreground rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-[1.1fr_1fr]">
-            <div className="p-8 lg:p-14">
-              <div className="inline-block text-[10px] tracking-[0.15em] uppercase px-3 py-1 border border-primary-foreground/30 rounded-full mb-7 text-primary-foreground/65">
-                Премиум · апрель
-              </div>
+
+      {/* ─── ТОП Салоны — карточки ───────────────────────────────────── */}
+      {businesses.length > 0 && (
+        <section className="px-5 sm:px-10 lg:px-16 py-8">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-baseline justify-between mb-6">
               <h2
-                className="font-heading font-normal text-primary-foreground leading-tight mb-8"
-                style={{ fontSize: 'clamp(1.8rem, 4vw, 3.2rem)', letterSpacing: '-0.025em' }}
+                className="font-heading font-normal text-foreground"
+                style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)', letterSpacing: '-0.02em' }}
               >
-                «Клиенты возвращаются<br />
-                не за услугой —<br />
-                <em className="italic text-primary-foreground/55">за чувством»</em>
+                ТОП Салоны
               </h2>
-
-              {/* Автор */}
-              <div className="flex items-center gap-4 mb-8">
-                <div className="w-11 h-11 rounded-full overflow-hidden relative flex-shrink-0">
-                  <Image src={IMG.master} alt="Анна Соколова" fill className="object-cover" unoptimized />
-                </div>
-                <div>
-                  <div className="text-sm font-medium">Анна Соколова</div>
-                  <div className="text-xs text-primary-foreground/55">Топ-колорист · студия Orchid</div>
-                </div>
-              </div>
-
-              {/* Свободные слоты */}
-              <div className="pt-5 border-t border-primary-foreground/20">
-                <div className="text-[11px] text-primary-foreground/50 mb-3 tracking-wide">Свободные окна на неделе</div>
-                <div className="flex flex-wrap gap-2">
-                  {['Ср · 14:30', 'Чт · 11:00', 'Пт · 18:00'].map((s) => (
-                    <div
-                      key={s}
-                      className="bg-white/10 border border-white/20 px-3.5 py-2 rounded-lg text-xs"
-                    >
-                      {s}
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <Link href="/businesses" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+                Смотреть все <ChevronRight className="w-4 h-4" />
+              </Link>
             </div>
 
-            {/* Фото — только десктоп */}
-            <div className="hidden lg:block relative min-h-[420px]">
-              <Image src={IMG.master} alt="Мастер" fill className="object-cover" unoptimized />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Журнал мастеров — табличный список ─────────────────────── */}
-      <section className="px-5 sm:px-10 lg:px-16 py-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-baseline justify-between mb-5">
-            <h2
-              className="font-heading font-normal text-foreground"
-              style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)', letterSpacing: '-0.02em' }}
-            >
-              ТОП Салоны
-            </h2>
-            <Link href="/businesses" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-              Показать всё <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="bg-card rounded-2xl border border-border overflow-hidden">
-            {businesses.length > 0 ? (
-              businesses.map((b: any, i: number) => (
-                <Link
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {businesses.map((b: any) => (
+                <BusinessCard
                   key={b.id}
-                  href={`/businesses/${b.slug}`}
-                  className="flex items-center gap-4 px-5 lg:px-7 py-4 border-b last:border-b-0 border-border hover:bg-muted/40 transition-colors"
-                >
-                  {/* Порядковый номер */}
-                  <span className="hidden sm:block font-heading text-xl text-muted-foreground/40 font-normal w-8 flex-shrink-0">
-                    {String(i + 1).padStart(2, '0')}
-                  </span>
-
-                  {/* Аватар */}
-                  <div className="w-11 h-11 rounded-full overflow-hidden relative bg-muted flex-shrink-0">
-                    {b.logoUrl ? (
-                      <Image src={b.logoUrl} alt={b.name} fill className="object-cover" unoptimized />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-lg">
-                        {CAT_ICON[b.category] || '🏪'}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Название + специализация */}
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold text-foreground truncate">{b.name}</div>
-                    <div className="text-xs text-muted-foreground mt-0.5 truncate">
-                      {BUSINESS_CATEGORIES.find((c) => c.value === b.category)?.label ?? b.category} · {b.city}
-                    </div>
-                  </div>
-
-                  {/* Рейтинг */}
-                  {b.avgRating != null && (
-                    <div className="hidden md:flex items-center gap-1 text-sm text-muted-foreground flex-shrink-0">
-                      <Star className="w-3.5 h-3.5 fill-primary text-primary" />
-                      <span>{b.avgRating}</span>
-                      <span className="text-muted-foreground/50">· {b.reviewCount || 0}</span>
-                    </div>
-                  )}
-
-                  {/* Кнопка */}
-                  <div className="bg-primary text-primary-foreground text-xs font-medium px-4 py-2 rounded-lg flex-shrink-0">
-                    Записаться →
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="py-16 text-center text-sm text-muted-foreground">
-                Данные загружаются…
-              </div>
-            )}
+                  id={b.id}
+                  name={b.name}
+                  slug={b.slug}
+                  category={b.category}
+                  city={b.city}
+                  logoUrl={b.logoUrl}
+                  avgRating={b.avgRating}
+                  reviewCount={b.reviewCount}
+                  staffCount={b.staffCount}
+                  description={b.description}
+                />
+              ))}
+            </div>
           </div>
-
-          <div className="flex justify-center mt-7">
-            <Button variant="outline" size="lg" className="rounded-full px-10" render={<Link href="/businesses" />}>
-              Смотреть все места
-            </Button>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ─── Для бизнеса ─────────────────────────────────────────────── */}
       <section className="px-5 sm:px-10 lg:px-16 py-8 pb-14">
@@ -307,13 +227,12 @@ export default async function HomePage() {
                 Без комиссий и скрытых платежей.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Button
-                  size="lg"
-                  className="px-8 h-12 text-sm rounded-full bg-primary-foreground text-primary hover:bg-primary-foreground/90"
-                  render={<Link href="/auth/register-business" />}
+                <Link
+                  href="/auth/register-business"
+                  className="inline-flex items-center gap-2 px-8 h-12 text-sm font-medium rounded-full bg-primary-foreground text-primary hover:bg-muted transition-colors"
                 >
                   Подключить бесплатно →
-                </Button>
+                </Link>
               </div>
             </div>
 

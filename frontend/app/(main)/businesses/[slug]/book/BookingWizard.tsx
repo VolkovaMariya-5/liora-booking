@@ -10,6 +10,7 @@ import { TimeSlot } from '@/components/shared/TimeSlot';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
+import { formatPrice } from '@/lib/constants';
 
 // ─── Типы — соответствуют реальной форме ответа API ───────────────────────
 
@@ -34,10 +35,11 @@ interface BookingWizardProps {
   businessSlug: string;
   businessId: string;
   businessName: string;
+  businessCountry?: string | null;
   staffList: StaffOption[];
-  allServices: ServiceOption[]; // все услуги бизнеса (для флоу service-first)
+  allServices: ServiceOption[];
   maxAdvanceDays: number;
-  flow: 'master' | 'service'; // флоу записи: мастер→услуга или услуга→мастер
+  flow: 'master' | 'service';
 }
 
 // Шаги зависят от флоу
@@ -52,6 +54,7 @@ export default function BookingWizard({
   businessSlug,
   businessId,
   businessName,
+  businessCountry,
   staffList,
   allServices,
   maxAdvanceDays,
@@ -75,18 +78,25 @@ export default function BookingWizard({
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Предвыбор мастера из URL параметра ?staffId= (только флоу master-first)
+  // Предвыбор мастера из ?staffId= (только флоу master-first)
   useEffect(() => {
     if (flow !== 'master') return;
     const staffId = searchParams.get('staffId');
     if (staffId) {
       const found = staffList.find((s) => s.id === staffId);
-      if (found) {
-        setSelectedStaff(found);
-        setStep(1);
-      }
+      if (found) { setSelectedStaff(found); setStep(1); }
     }
   }, [searchParams, staffList, flow]);
+
+  // Предвыбор услуги из ?serviceId= (только флоу service-first)
+  useEffect(() => {
+    if (flow !== 'service') return;
+    const serviceId = searchParams.get('serviceId');
+    if (serviceId) {
+      const found = allServices.find((s) => s.id === serviceId);
+      if (found) { setSelectedServices([found]); }
+    }
+  }, [searchParams, allServices, flow]);
 
   // Услуги выбранного мастера (для флоу master-first)
   const staffServices: ServiceOption[] =
@@ -188,7 +198,7 @@ export default function BookingWizard({
             <span className="text-foreground font-medium">Услуги:</span>
             <ul className="ml-3 mt-0.5 space-y-0.5">
               {selectedServices.map((s) => (
-                <li key={s.id}>{s.name} — {Number(s.price).toLocaleString('ru')} ₽</li>
+                <li key={s.id}>{s.name} — {formatPrice(s.price, businessCountry)}</li>
               ))}
             </ul>
           </div>
@@ -211,7 +221,7 @@ export default function BookingWizard({
       {totalPrice > 0 && (
         <div className="pt-2 border-t border-border flex justify-between font-semibold text-foreground">
           <span>Итого</span>
-          <span className="text-primary">{totalPrice.toLocaleString('ru')} ₽</span>
+          <span className="text-primary">{formatPrice(totalPrice, businessCountry)}</span>
         </div>
       )}
     </div>
@@ -457,7 +467,7 @@ export default function BookingWizard({
                 {phone && <Row label="Телефон" value={phone} />}
                 <div className="pt-2 border-t border-border flex justify-between font-semibold">
                   <span>Итого</span>
-                  <span className="text-primary">{totalPrice.toLocaleString('ru')} ₽</span>
+                  <span className="text-primary">{formatPrice(totalPrice, businessCountry)}</span>
                 </div>
               </div>
               <div className="flex gap-3 mt-6">

@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback } from 'react';
+import { CITIES_BY_COUNTRY } from '@/lib/constants';
 
 interface Category {
   value: string;
@@ -15,8 +16,20 @@ interface BusinessFiltersProps {
   selectedCity: string;
 }
 
-// BusinessFilters — клиентский компонент для интерактивной фильтрации каталога
-// Обновляет URL search params без перезагрузки страницы
+// Все города из всех стран — для выпадающего списка в каталоге
+const ALL_CITIES = [
+  ...CITIES_BY_COUNTRY.KZ,
+  ...CITIES_BY_COUNTRY.RU,
+  ...CITIES_BY_COUNTRY.BY,
+  ...CITIES_BY_COUNTRY.UA,
+  ...CITIES_BY_COUNTRY.UZ,
+  ...CITIES_BY_COUNTRY.AM,
+  ...CITIES_BY_COUNTRY.GE,
+  ...CITIES_BY_COUNTRY.AZ,
+  ...CITIES_BY_COUNTRY.KG,
+  ...CITIES_BY_COUNTRY.MD,
+].sort();
+
 export default function BusinessFilters({
   categories,
   selectedCategory,
@@ -25,7 +38,6 @@ export default function BusinessFilters({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Обновляет один параметр фильтра и сбрасывает пагинацию
   const updateFilter = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString());
@@ -34,15 +46,15 @@ export default function BusinessFilters({
       } else {
         params.delete(key);
       }
-      params.delete('page'); // сброс пагинации при смене фильтра
+      params.delete('page');
       router.push(`?${params.toString()}`);
     },
     [router, searchParams],
   );
 
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
-      {/* Фильтр по категории */}
+    <div className="space-y-3 mb-6">
+      {/* Строка 1: Фильтр по категории */}
       <div className="flex flex-wrap gap-1.5">
         <button
           onClick={() => updateFilter('category', '')}
@@ -71,17 +83,32 @@ export default function BusinessFilters({
         ))}
       </div>
 
-      {/* Поле ввода города */}
-      <input
-        type="text"
-        placeholder="Город..."
-        defaultValue={selectedCity}
-        onBlur={(e) => updateFilter('city', e.target.value.trim())}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') updateFilter('city', (e.target as HTMLInputElement).value.trim());
-        }}
-        className="px-3 py-1.5 rounded-full text-sm border border-border focus:border-primary focus:outline-none bg-background ml-auto"
-      />
+      {/* Строка 2: Фильтр по городу — выпадающий список */}
+      <div className="flex items-center gap-3">
+        <select
+          value={selectedCity}
+          onChange={(e) => updateFilter('city', e.target.value)}
+          className="px-3 py-1.5 rounded-full text-sm border border-border focus:border-primary focus:outline-none bg-background min-w-45"
+        >
+          <option value="">Все города</option>
+          {ALL_CITIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+
+        {/* Сброс фильтров */}
+        {(selectedCategory || selectedCity) && (
+          <button
+            onClick={() => {
+              const params = new URLSearchParams();
+              router.push(`?${params.toString()}`);
+            }}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors underline underline-offset-2"
+          >
+            Сбросить фильтры
+          </button>
+        )}
+      </div>
     </div>
   );
 }

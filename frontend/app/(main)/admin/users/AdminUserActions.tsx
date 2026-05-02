@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
+import { LocationSelects } from '@/components/shared/LocationSelects';
 
 interface User {
   id: string;
@@ -111,24 +112,12 @@ export function AdminUserActions({ user }: { user: User }) {
                   ))}
                 </select>
               </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Город">
-                  <input
-                    value={form.city}
-                    onChange={(e) => setForm({ ...form, city: e.target.value })}
-                    className={inputCls}
-                    placeholder="Москва"
-                  />
-                </Field>
-                <Field label="Страна">
-                  <input
-                    value={form.country}
-                    onChange={(e) => setForm({ ...form, country: e.target.value })}
-                    className={inputCls}
-                    placeholder="RU"
-                  />
-                </Field>
-              </div>
+              <LocationSelects
+                country={form.country}
+                city={form.city}
+                onCountryChange={(country, city) => setForm((prev) => ({ ...prev, country, city }))}
+                onCityChange={(city) => setForm((prev) => ({ ...prev, city }))}
+              />
             </div>
 
             <div className="flex gap-3 mt-6">
@@ -227,24 +216,12 @@ export function AdminCreateUserButton() {
                   ))}
                 </select>
               </Field>
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Город">
-                  <input
-                    value={form.city}
-                    onChange={(e) => setForm({ ...form, city: e.target.value })}
-                    className={inputCls}
-                    placeholder="Москва"
-                  />
-                </Field>
-                <Field label="Страна">
-                  <input
-                    value={form.country}
-                    onChange={(e) => setForm({ ...form, country: e.target.value })}
-                    className={inputCls}
-                    placeholder="RU"
-                  />
-                </Field>
-              </div>
+              <LocationSelects
+                country={form.country}
+                city={form.city}
+                onCountryChange={(country, city) => setForm((prev) => ({ ...prev, country, city }))}
+                onCityChange={(city) => setForm((prev) => ({ ...prev, city }))}
+              />
             </div>
 
             <div className="flex gap-3 mt-6">

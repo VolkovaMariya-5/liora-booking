@@ -4,12 +4,10 @@ import { BUSINESS_CATEGORIES } from '@/lib/constants';
 import BusinessesLoading from './loading';
 import BusinessFilters from './BusinessFilters';
 
-// Тип ответа от API /businesses
+// Тип ответа от API /businesses (data + meta)
 interface BusinessListResponse {
   data: BusinessItem[];
-  total: number;
-  page: number;
-  limit: number;
+  meta?: { total: number; page: number; limit: number; totalPages: number };
 }
 
 interface BusinessItem {
@@ -32,10 +30,10 @@ async function fetchBusinesses(params: Record<string, string>): Promise<Business
 
   try {
     const res = await fetch(url, { next: { revalidate: 60 } });
-    if (!res.ok) return { data: [], total: 0, page: 1, limit: 12 };
+    if (!res.ok) return { data: [], meta: { total: 0, page: 1, limit: 12, totalPages: 0 } };
     return res.json();
   } catch {
-    return { data: [], total: 0, page: 1, limit: 12 };
+    return { data: [], meta: { total: 0, page: 1, limit: 12, totalPages: 0 } };
   }
 }
 
@@ -56,16 +54,17 @@ export default async function BusinessesPage({ searchParams }: PageProps) {
     limit: '12',
   });
 
-  const totalPages = Math.ceil(result.total / 12);
+  const total = result.meta?.total ?? result.data.length;
+  const totalPages = Math.ceil(total / 12);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Заголовок */}
       <h1 className="font-heading text-4xl font-semibold text-foreground mb-2">Каталог</h1>
-      <p className="text-muted-foreground mb-8">
-        {result.total > 0
-          ? `Найдено ${result.total} ${getPluralForm(result.total, ['место', 'места', 'мест'])}`
-          : 'Ничего не найдено'}
+      <p className="text-muted-foreground mb-6">
+        {total > 0
+          ? `Найдено ${total} ${getPluralForm(total, ['место', 'места', 'мест'])}`
+          : category || city ? 'По этим фильтрам ничего нет' : ''}
       </p>
 
       {/* Фильтры — Client Component (интерактивный) */}

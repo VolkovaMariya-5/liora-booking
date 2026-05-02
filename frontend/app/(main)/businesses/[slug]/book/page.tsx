@@ -44,6 +44,7 @@ export default async function BookPage({ params, searchParams }: PageProps) {
       businessSlug={slug}
       businessId={business.id}
       businessName={business.name}
+      businessCountry={business.country}
       staffList={business.staff ?? []}
       allServices={allServices}
       maxAdvanceDays={business.maxAdvanceBookingDays ?? 30}

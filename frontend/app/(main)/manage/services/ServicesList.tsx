@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { formatPrice } from '@/lib/constants';
 
 interface Service {
   id: string;
@@ -17,7 +18,7 @@ interface Service {
 }
 
 // ServicesList — список услуг с inline-формой добавления и редактирования
-export default function ServicesList({ services: initialServices }: { services: Service[] }) {
+export default function ServicesList({ services: initialServices, businessCountry }: { services: Service[]; businessCountry?: string | null }) {
   const router = useRouter();
   const [services, setServices] = useState(initialServices);
   const [editing, setEditing] = useState<string | null>(null); // id редактируемой услуги
@@ -27,19 +28,19 @@ export default function ServicesList({ services: initialServices }: { services: 
 
   const resetForm = () => setForm({ name: '', description: '', price: '', duration: '60' });
 
-  // Добавление новой услуги
-  const handleAdd = async () => {
-    if (!form.name.trim() || !form.price) {
+  // Добавление новой услуги — принимает данные напрямую (не из stale state)
+  const handleAdd = async (data: { name: string; description?: string; price: number; duration: number }) => {
+    if (!data.name.trim() || !data.price) {
       toast.error('Введите название и цену');
       return;
     }
     setSaving(true);
     try {
       const res = await api.post('/manage/services', {
-        name: form.name.trim(),
-        description: form.description.trim() || undefined,
-        price: Number(form.price),
-        duration: Number(form.duration),
+        name: data.name.trim(),
+        description: data.description?.trim() || undefined,
+        price: Number(data.price),
+        duration: Number(data.duration),
       });
       setServices((prev) => [...prev, res.data]);
       setShowAdd(false);
@@ -98,7 +99,7 @@ export default function ServicesList({ services: initialServices }: { services: 
                   <p className="text-xs text-muted-foreground mt-0.5">{svc.description}</p>
                 )}
                 <p className="text-sm text-muted-foreground mt-0.5">
-                  {svc.duration} мин · {Number(svc.price).toLocaleString('ru')} ₽
+                  {svc.duration} мин · {formatPrice(svc.price, businessCountry)}
                 </p>
               </div>
               <div className="flex gap-1 shrink-0">
@@ -126,10 +127,7 @@ export default function ServicesList({ services: initialServices }: { services: 
       {showAdd ? (
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
           <ServiceForm
-            onSave={async (data) => {
-              setForm(data as any);
-              await handleAdd();
-            }}
+            onSave={handleAdd}
             onCancel={() => { setShowAdd(false); resetForm(); }}
             saving={saving}
           />
@@ -176,7 +174,7 @@ function ServiceForm({
       />
       <input
         type="number"
-        placeholder="Цена (₽) *"
+        placeholder="Цена *"
         value={price}
         onChange={(e) => setPrice(e.target.value)}
         className="px-3 py-2 rounded-lg border border-border bg-background text-sm focus:border-primary focus:outline-none"
