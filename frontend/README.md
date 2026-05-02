@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Liora — Frontend (Next.js)
 
-## Getting Started
+Клиентская часть платформы онлайн-записи **Liora**. Записывайтесь к мастерам салонов красоты, барбершопов и SPA — без звонков, в любое время.
 
-First, run the development server:
+## Технологии
+
+- **Next.js 15** (App Router, Server Components)
+- **NextAuth.js v5** — аутентификация (Credentials + JWT)
+- **Tailwind CSS** — стилизация
+- **shadcn/ui** + **Base UI** — компоненты
+- **Axios** — HTTP-клиент
+- **TypeScript** (strict mode)
+
+## Запуск локально
 
 ```bash
+# 1. Установить зависимости
+npm install
+
+# 2. Создать .env.local из примера
+cp .env.example .env.local
+# Заполнить значения (NEXT_PUBLIC_API_URL, NEXTAUTH_SECRET и др.)
+
+# 3. Запустить dev-сервер
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# → http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Переменные окружения
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Переменная | Описание |
+|---|---|
+| `NEXT_PUBLIC_API_URL` | URL бэкенда (например: `http://localhost:3001/api`) |
+| `NEXTAUTH_SECRET` | Секрет для NextAuth (минимум 32 символа) |
+| `NEXTAUTH_URL` | URL фронтенда (например: `http://localhost:3000`) |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID (опционально) |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret (опционально) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Структура проекта
 
-## Learn More
+```
+frontend/
+├── app/
+│   ├── (main)/          # Публичные страницы с хедером
+│   │   ├── page.tsx     # Лендинг
+│   │   ├── businesses/  # Каталог и страницы бизнесов
+│   │   ├── bookings/    # Записи клиента
+│   │   ├── manage/      # Кабинет владельца бизнеса
+│   │   ├── admin/       # Кабинет супер-администратора
+│   │   └── staff/       # Кабинет мастера
+│   ├── auth/            # Страницы входа и регистрации
+│   └── actions/         # Server Actions
+├── components/
+│   ├── layout/          # Header, Footer, CitySelector
+│   ├── shared/          # Stepper, DayPicker, TimeSlot и др.
+│   ├── businesses/      # BusinessCard
+│   └── ui/              # shadcn/ui компоненты
+└── lib/
+    ├── api.ts           # Axios instance с JWT interceptor
+    ├── auth.ts          # NextAuth config
+    └── constants.ts     # Категории, города, getCurrency
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Роли пользователей
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Роль | Доступ |
+|---|---|
+| `CLIENT` | Каталог, запись, отзывы, избранное |
+| `STAFF` | Своё расписание и записи |
+| `BUSINESS_ADMIN` | Управление мастерами, услугами, записями |
+| `SUPER_ADMIN` | Полная статистика, управление всеми бизнесами и пользователями |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Тестовые аккаунты (seed-данные)
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Email | Пароль | Роль |
+|---|---|---|
+| `admin@liora.app` | `Admin123!` | SUPER_ADMIN |
+| `owner.belle@example.com` | `Business123!` | BUSINESS_ADMIN |
+| `anna@example.com` | `Client123!` | CLIENT |
