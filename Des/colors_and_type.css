@@ -1,0 +1,14 @@
+/* Liora brand fonts & tokens */
+
+@font-face {
+  font-family: 'TT Norms';
+  src: url('fonts/TTNorms-Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-sans: 'TT Norms', 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
+}

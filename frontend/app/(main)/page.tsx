@@ -8,10 +8,15 @@ import { ChevronRight, Star } from 'lucide-react';
 // Лендинг / — главная страница Liora
 // Структура: Hero (split) · Bento-категории · Editorial feature · Журнал мастеров · B2B-секция
 
-async function getPopularBusinesses() {
+// Сначала пробуем ТОП (isFeatured=true), fallback — обычные
+async function getTopBusinesses() {
   try {
-    const res = await api.get('/businesses?limit=8&page=1');
-    return res.data?.data ?? [];
+    const res = await api.get('/businesses?featured=true&limit=8');
+    const items = res.data?.data ?? [];
+    if (items.length > 0) return items;
+    // Если ещё никто не помечен как ТОП — показываем обычные
+    const fallback = await api.get('/businesses?limit=8&page=1');
+    return fallback.data?.data ?? [];
   } catch {
     return [];
   }
@@ -33,67 +38,35 @@ const IMG = {
 };
 
 export default async function HomePage() {
-  const businesses = await getPopularBusinesses();
+  const businesses = await getTopBusinesses();
 
   return (
     <div className="flex flex-col bg-background">
 
-      {/* ─── Hero ─────────────────────────────────────────────────────── */}
-      <section className="px-5 sm:px-10 lg:px-16 pt-14 pb-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1.2fr_1fr] gap-10 lg:gap-14 items-end">
-
-          {/* Текст */}
-          <div>
-            <div className="text-[11px] tracking-[0.18em] uppercase text-muted-foreground mb-5">
-              — ваша запись, без звонков
-            </div>
-            <h1
-              className="font-heading font-normal text-foreground leading-[0.97] mb-5"
-              style={{ fontSize: 'clamp(2.8rem, 7.5vw, 6rem)', letterSpacing: '-0.03em' }}
-            >
-              Мастера и салоны<br />
-              <em className="italic text-primary">вашего города</em>
-            </h1>
-            <p className="text-base text-muted-foreground leading-relaxed max-w-md">
-              Записывайтесь к проверенным мастерам в несколько кликов.
-              Рейтинг, живые работы и реальные отзывы — в одном месте.
-            </p>
+      {/* ─── Hero — центрированный, без виджета ──────────────────────── */}
+      <section className="px-5 sm:px-10 lg:px-16 pt-16 pb-12">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="text-[11px] tracking-[0.18em] uppercase text-muted-foreground mb-6">
+            — ваша запись, без звонков
           </div>
-
-          {/* Поисковая карточка */}
-          <div className="bg-primary text-primary-foreground rounded-2xl p-6 shadow-2xl">
-            <div className="text-[10px] tracking-[0.18em] uppercase text-primary-foreground/55 mb-4">
-              Найти запись
-            </div>
-            <div className="flex flex-col gap-3">
-              {/* Услуга */}
-              <div className="bg-white/10 rounded-xl px-4 py-3">
-                <div className="text-[9px] tracking-[0.1em] uppercase text-primary-foreground/50 mb-1">
-                  Услуга или мастер
-                </div>
-                <div className="text-sm text-primary-foreground/75">
-                  стрижка, окрашивание, маникюр…
-                </div>
-              </div>
-              {/* Когда + Где */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white/10 rounded-xl px-4 py-3">
-                  <div className="text-[9px] tracking-[0.1em] uppercase text-primary-foreground/50 mb-1">Когда</div>
-                  <div className="text-sm text-primary-foreground/75">Сегодня вечером</div>
-                </div>
-                <div className="bg-white/10 rounded-xl px-4 py-3">
-                  <div className="text-[9px] tracking-[0.1em] uppercase text-primary-foreground/50 mb-1">Где</div>
-                  <div className="text-sm text-primary-foreground/75">Рядом со мной</div>
-                </div>
-              </div>
-              {/* Кнопка */}
-              <Link
-                href="/businesses"
-                className="mt-1 block text-center bg-secondary hover:opacity-90 text-secondary-foreground py-3.5 rounded-xl text-sm font-medium transition-opacity"
-              >
-                Показать варианты →
-              </Link>
-            </div>
+          <h1
+            className="font-heading font-normal text-foreground leading-[0.97] mb-6"
+            style={{ fontSize: 'clamp(3rem, 8vw, 7rem)', letterSpacing: '-0.03em' }}
+          >
+            Мастера и салоны<br />
+            <em className="italic text-primary">вашего города</em>
+          </h1>
+          <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-lg mx-auto mb-8">
+            Записывайтесь к проверенным мастерам в несколько кликов.
+            Рейтинг, живые работы и реальные отзывы — в одном месте.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button size="lg" className="px-8 h-12 text-sm rounded-full" render={<Link href="/businesses" />}>
+              Найти мастера →
+            </Button>
+            <Button size="lg" variant="outline" className="px-8 h-12 text-sm rounded-full" render={<Link href="/auth/register-business" />}>
+              Я — владелец салона
+            </Button>
           </div>
         </div>
       </section>
@@ -247,7 +220,7 @@ export default async function HomePage() {
               className="font-heading font-normal text-foreground"
               style={{ fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)', letterSpacing: '-0.02em' }}
             >
-              Популярные салоны
+              ТОП Салоны
             </h2>
             <Link href="/businesses" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
               Показать всё <ChevronRight className="w-4 h-4" />

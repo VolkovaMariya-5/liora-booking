@@ -1,0 +1,55 @@
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateServiceDto } from './dto/create-service.dto';
+import { BusinessesService } from '../businesses/businesses.service';
+export declare class ServicesService {
+    private readonly prisma;
+    private readonly businessesService;
+    constructor(prisma: PrismaService, businessesService: BusinessesService);
+    findByBusiness(businessId: string): Promise<{
+        id: string;
+        name: string;
+        description: string | null;
+        isActive: boolean;
+        businessId: string;
+        price: import("@prisma/client-runtime-utils").Decimal;
+        duration: number;
+    }[]>;
+    findByBusinessForAdmin(businessId: string): Promise<{
+        id: string;
+        name: string;
+        description: string | null;
+        isActive: boolean;
+        businessId: string;
+        price: import("@prisma/client-runtime-utils").Decimal;
+        duration: number;
+    }[]>;
+    create(businessId: string, dto: CreateServiceDto, ownerId: string): Promise<{
+        id: string;
+        name: string;
+        description: string | null;
+        isActive: boolean;
+        businessId: string;
+        price: import("@prisma/client-runtime-utils").Decimal;
+        duration: number;
+    }>;
+    update(id: string, dto: Partial<CreateServiceDto>, ownerId: string): Promise<{
+        id: string;
+        name: string;
+        description: string | null;
+        isActive: boolean;
+        businessId: string;
+        price: import("@prisma/client-runtime-utils").Decimal;
+        duration: number;
+    }>;
+    remove(id: string, ownerId: string): Promise<{
+        id: string;
+        name: string;
+        description: string | null;
+        isActive: boolean;
+        businessId: string;
+        price: import("@prisma/client-runtime-utils").Decimal;
+        duration: number;
+    }>;
+    private findById;
+    private assertOwner;
+}

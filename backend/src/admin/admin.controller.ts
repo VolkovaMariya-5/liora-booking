@@ -1,4 +1,4 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
 import { BusinessesService } from '../businesses/businesses.service';
@@ -50,6 +50,20 @@ export class AdminController {
   @ApiOperation({ summary: 'Все бизнесы (SUPER_ADMIN)' })
   getBusinesses(@Query('page') page = '1', @Query('limit') limit = '20') {
     return this.businessesService.findAllAdmin(Number(page), Number(limit));
+  }
+
+  // Блокировка/разблокировка бизнеса
+  @Patch('businesses/:id/toggle')
+  @ApiOperation({ summary: 'Блокировать/разблокировать бизнес' })
+  toggleBusiness(@Param('id') id: string) {
+    return this.businessesService.toggleActive(id);
+  }
+
+  // Добавить/убрать из ТОП-подборки на лендинге
+  @Patch('businesses/:id/featured')
+  @ApiOperation({ summary: 'Добавить/убрать бизнес из ТОП' })
+  toggleFeatured(@Param('id') id: string) {
+    return this.businessesService.toggleFeatured(id);
   }
 
   // Список пользователей

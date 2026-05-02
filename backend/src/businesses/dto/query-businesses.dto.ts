@@ -1,5 +1,5 @@
-import { IsOptional, IsString, IsEnum, IsInt, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsEnum, IsInt, Min, IsBoolean } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { BusinessCategory } from '@prisma/client';
 
@@ -39,4 +39,10 @@ export class QueryBusinessesDto {
   @IsInt()
   @Min(1)
   limit?: number = 12;
+
+  @ApiPropertyOptional({ description: 'Только ТОП-салоны (isFeatured=true)' })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  featured?: boolean;
 }

@@ -81,6 +81,7 @@ model Business {
   city                  String           // Город бизнеса — для персонализированного поиска
   isActive              Boolean          @default(true)  // false = заблокирован SUPER_ADMIN
   isVisible             Boolean          @default(false) // true только когда есть мастер + услуга
+  isFeatured            Boolean          @default(false) // true = попадает в ТОП на лендинге
   maxAdvanceBookingDays Int              @default(30)    // На сколько дней вперёд можно записаться
   ownerId               String           @unique         // Один владелец — один бизнес
   createdAt             DateTime         @default(now())

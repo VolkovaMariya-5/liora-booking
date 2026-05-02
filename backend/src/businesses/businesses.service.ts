@@ -17,17 +17,17 @@ export class BusinessesService {
   // Публичный каталог бизнесов с фильтрами и пагинацией
   // Показываем только isActive=true, isVisible=true
   async findAll(query: QueryBusinessesDto) {
-    const { search, category, country, city, page = 1, limit = 12 } = query;
+    const { search, category, country, city, page = 1, limit = 12, featured } = query;
     const skip = (page - 1) * limit;
 
     const where = {
       isActive: true,
       isVisible: true,
-      // Фильтрация по полям — применяем только если параметр передан
+      // Фильтр ТОП-салонов для лендинга
+      ...(featured && { isFeatured: true }),
       ...(category && { category }),
       ...(country && { country }),
       ...(city && { city }),
-      // Полнотекстовый поиск по названию и описанию
       ...(search && {
         OR: [
           { name: { contains: search, mode: 'insensitive' as const } },
@@ -156,6 +156,15 @@ export class BusinessesService {
     return this.prisma.business.update({
       where: { id },
       data: { isActive: !business.isActive },
+    });
+  }
+
+  // Добавить/убрать бизнес из ТОП-подборки на лендинге (только SUPER_ADMIN)
+  async toggleFeatured(id: string) {
+    const business = await this.findById(id);
+    return this.prisma.business.update({
+      where: { id },
+      data: { isFeatured: !business.isFeatured },
     });
   }
 

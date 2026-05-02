@@ -9,17 +9,18 @@ import { api } from '@/lib/api';
 interface Props {
   businessId: string;
   isActive: boolean;
+  isFeatured: boolean;
 }
 
-// AdminBusinessActions — кнопка блокировки/разблокировки бизнеса для SUPER_ADMIN
-// После блокировки бизнес исчезает из публичного каталога (раздел 15 ТЗ)
-export default function AdminBusinessActions({ businessId, isActive }: Props) {
+export default function AdminBusinessActions({ businessId, isActive, isFeatured }: Props) {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const [loadingActive, setLoadingActive] = useState(false);
+  const [loadingFeatured, setLoadingFeatured] = useState(false);
   const [active, setActive] = useState(isActive);
+  const [featured, setFeatured] = useState(isFeatured);
 
-  const toggle = async () => {
-    setLoading(true);
+  const toggleActive = async () => {
+    setLoadingActive(true);
     try {
       await api.patch(`/admin/businesses/${businessId}/toggle`);
       setActive((prev) => !prev);
@@ -28,18 +29,53 @@ export default function AdminBusinessActions({ businessId, isActive }: Props) {
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Ошибка');
     } finally {
-      setLoading(false);
+      setLoadingActive(false);
+    }
+  };
+
+  const toggleFeatured = async () => {
+    setLoadingFeatured(true);
+    try {
+      await api.patch(`/admin/businesses/${businessId}/featured`);
+      setFeatured((prev) => !prev);
+      toast.success(featured ? 'Убрано из ТОП' : 'Добавлено в ТОП');
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Ошибка');
+    } finally {
+      setLoadingFeatured(false);
     }
   };
 
   return (
-    <Button
-      size="sm"
-      variant={active ? 'destructive' : 'outline'}
-      onClick={toggle}
-      disabled={loading}
-    >
-      {active ? 'Заблокировать' : 'Разблокировать'}
-    </Button>
+    <>
+      {/* ТОП-статус */}
+      <button
+        onClick={toggleFeatured}
+        disabled={loadingFeatured}
+        title={featured ? 'Убрать из ТОП' : 'Добавить в ТОП'}
+        className={`text-lg transition-opacity ${loadingFeatured ? 'opacity-40' : 'hover:scale-110'}`}
+      >
+        {featured ? '⭐' : '☆'}
+      </button>
+
+      {/* Статус */}
+      <span>
+        {active ? (
+          <span className="text-xs text-green-600 font-medium">Активен</span>
+        ) : (
+          <span className="text-xs text-red-500 font-medium">Заблокирован</span>
+        )}
+      </span>
+
+      {/* Блокировка */}
+      <Button
+        size="sm"
+        variant={active ? 'destructive' : 'outline'}
+        onClick={toggleActive}
+        disabled={loadingActive}
+      >
+        {active ? 'Заблокировать' : 'Разблокировать'}
+      </Button>
+    </>
   );
 }
