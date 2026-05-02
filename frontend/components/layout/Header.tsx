@@ -61,7 +61,7 @@ const PROFILE_LINKS: Record<string, { label: string; href: string }[]> = {
   SUPER_ADMIN: [{ label: 'Профиль', href: '/profile' }],
 };
 
-export function Header() {
+export function Header({ citySelector }: { citySelector?: React.ReactNode }) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -75,10 +75,13 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12">
         <div className="flex items-center justify-between h-16">
 
-          {/* Логотип — Cormorant Garamond light для изящного брендового вида */}
+          {/* Логотип */}
           <Link href="/" className="font-heading text-3xl font-light tracking-wide text-primary">
             Liora
           </Link>
+
+          {/* Селектор города */}
+          {citySelector}
 
           {/* Навигация — десктоп */}
           <nav className="hidden md:flex items-center gap-0.5">

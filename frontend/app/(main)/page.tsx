@@ -1,27 +1,29 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { cookies } from 'next/headers';
 import { Button } from '@/components/ui/button';
 import { BUSINESS_CATEGORIES } from '@/lib/constants';
 import { BusinessCard } from '@/components/businesses/BusinessCard';
 import { ChevronRight } from 'lucide-react';
+const DEFAULT_CITY = 'Усть-Каменогорск';
 
-// Отключаем кэш — страница должна отдавать свежие ТОП Салоны после изменений в админке
 export const dynamic = 'force-dynamic';
 
 // Лендинг / — главная страница Liora
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-// Используем fetch напрямую — api.ts использует getSession() (client-only), в Server Component падает
-async function getTopBusinesses() {
+async function getTopBusinesses(city: string) {
   try {
-    const res = await fetch(`${API}/businesses?featured=true&limit=8`, { cache: 'no-store' });
+    const cityParam = encodeURIComponent(city);
+    // Сначала ТОП в этом городе
+    const res = await fetch(`${API}/businesses?featured=true&city=${cityParam}&limit=8`, { cache: 'no-store' });
     if (!res.ok) throw new Error();
     const json = await res.json();
     const items = json?.data ?? [];
     if (items.length > 0) return items;
-    // fallback — если никто не в ТОП, показываем обычные
-    const fallback = await fetch(`${API}/businesses?limit=8`, { cache: 'no-store' });
+    // Fallback — все салоны этого города
+    const fallback = await fetch(`${API}/businesses?city=${cityParam}&limit=8`, { cache: 'no-store' });
     if (!fallback.ok) return [];
     const fb = await fallback.json();
     return fb?.data ?? [];
@@ -46,7 +48,9 @@ const IMG = {
 };
 
 export default async function HomePage() {
-  const businesses = await getTopBusinesses();
+  const store = await cookies();
+  const city = store.get('preferred_city')?.value ?? DEFAULT_CITY;
+  const businesses = await getTopBusinesses(city);
 
   return (
     <div className="flex flex-col bg-background">
@@ -157,7 +161,7 @@ export default async function HomePage() {
                   className="object-cover transition-transform duration-500 group-hover:scale-105"
                   unoptimized
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-2 lg:p-3 text-white">
                   <div className="text-xs lg:text-sm font-semibold leading-snug">{c.n}</div>
                   <div className="text-[10px] text-white/70 mt-0.5">{c.c} мест</div>

@@ -185,6 +185,8 @@ function EditStaffForm({
   onCancel: () => void;
 }) {
   const [bio, setBio] = useState(member.bio ?? '');
+  const [photoUrl, setPhotoUrl] = useState(member.photoUrl ?? '');
+  const [uploading, setUploading] = useState(false);
   const [selectedServiceIds, setSelectedServiceIds] = useState<string[]>(
     member.services?.map((ss) => ss.service.id) ?? [],
   );
@@ -225,8 +227,26 @@ function EditStaffForm({
     );
   };
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await api.post('/upload/image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setPhotoUrl(res.data.url);
+      toast.success('Фото загружено');
+    } catch {
+      toast.error('Не удалось загрузить фото');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSave = async () => {
-    // Валидация расписания
     for (const day of schedule) {
       if (day.isWorking && day.endTime <= day.startTime) {
         toast.error(`${DAY_NAMES[day.dayOfWeek]}: время окончания должно быть позже начала`);
@@ -235,10 +255,10 @@ function EditStaffForm({
     }
     setSaving(true);
     try {
-      // Сохраняем профиль и расписание параллельно
       await Promise.all([
         api.patch(`/manage/staff/${member.id}`, {
           bio: bio || undefined,
+          photoUrl: photoUrl || undefined,
           serviceIds: selectedServiceIds,
         }),
         api.put(`/manage/staff/${member.id}/schedule`, { schedule }),
@@ -246,7 +266,7 @@ function EditStaffForm({
       const updatedServices = availableServices
         .filter((s) => selectedServiceIds.includes(s.id))
         .map((s) => ({ service: s }));
-      onSuccess({ id: member.id, bio, services: updatedServices });
+      onSuccess({ id: member.id, bio, photoUrl, services: updatedServices });
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Ошибка при сохранении');
     } finally {
@@ -259,6 +279,40 @@ function EditStaffForm({
       <p className="text-sm font-semibold text-foreground">
         Редактировать: {member.user?.name}
       </p>
+
+      {/* Фото мастера */}
+      <div>
+        <label className="text-xs text-muted-foreground block mb-2">Фото мастера</label>
+        <div className="flex items-center gap-4">
+          {photoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={photoUrl} alt="Фото" className="w-16 h-16 rounded-full object-cover border border-border" />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center text-2xl border border-border">
+              {member.user?.name?.charAt(0) ?? '?'}
+            </div>
+          )}
+          <label className="cursor-pointer text-sm text-primary hover:underline">
+            {uploading ? 'Загружаем...' : 'Загрузить фото'}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handlePhotoUpload}
+              disabled={uploading}
+            />
+          </label>
+          {photoUrl && (
+            <button
+              type="button"
+              onClick={() => setPhotoUrl('')}
+              className="text-xs text-destructive hover:underline"
+            >
+              Удалить
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* Специализация */}
       <div>

@@ -1,8 +1,11 @@
 import { Suspense } from 'react';
+import { cookies } from 'next/headers';
 import { BusinessCard } from '@/components/businesses/BusinessCard';
 import { BUSINESS_CATEGORIES } from '@/lib/constants';
 import BusinessesLoading from './loading';
 import BusinessFilters from './BusinessFilters';
+
+const DEFAULT_CITY = 'Усть-Каменогорск';
 
 // Тип ответа от API /businesses (data + meta)
 interface BusinessListResponse {
@@ -45,7 +48,10 @@ interface PageProps {
 // Фильтры: категория, город; пагинация; серверный рендеринг
 export default async function BusinessesPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const { category = '', city = '', page = '1' } = params;
+  const store = await cookies();
+  // Если город не выбран явно в URL — берём из cookie (предпочтение пользователя)
+  const preferredCity = store.get('preferred_city')?.value ?? DEFAULT_CITY;
+  const { category = '', city = preferredCity, page = '1' } = params;
 
   const result = await fetchBusinesses({
     ...(category && { category }),
