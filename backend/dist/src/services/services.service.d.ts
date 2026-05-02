@@ -10,45 +10,45 @@ export declare class ServicesService {
         name: string;
         description: string | null;
         isActive: boolean;
-        businessId: string;
         price: import("@prisma/client-runtime-utils").Decimal;
         duration: number;
+        businessId: string;
     }[]>;
     findByBusinessForAdmin(businessId: string): Promise<{
         id: string;
         name: string;
         description: string | null;
         isActive: boolean;
-        businessId: string;
         price: import("@prisma/client-runtime-utils").Decimal;
         duration: number;
+        businessId: string;
     }[]>;
     create(businessId: string, dto: CreateServiceDto, ownerId: string): Promise<{
         id: string;
         name: string;
         description: string | null;
         isActive: boolean;
-        businessId: string;
         price: import("@prisma/client-runtime-utils").Decimal;
         duration: number;
+        businessId: string;
     }>;
     update(id: string, dto: Partial<CreateServiceDto>, ownerId: string): Promise<{
         id: string;
         name: string;
         description: string | null;
         isActive: boolean;
-        businessId: string;
         price: import("@prisma/client-runtime-utils").Decimal;
         duration: number;
+        businessId: string;
     }>;
     remove(id: string, ownerId: string): Promise<{
         id: string;
         name: string;
         description: string | null;
         isActive: boolean;
-        businessId: string;
         price: import("@prisma/client-runtime-utils").Decimal;
         duration: number;
+        businessId: string;
     }>;
     private findById;
     private assertOwner;

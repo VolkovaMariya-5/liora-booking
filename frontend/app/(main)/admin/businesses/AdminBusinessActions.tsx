@@ -47,7 +47,8 @@ export default function AdminBusinessActions({ businessId, isActive, isFeatured 
   };
 
   return (
-    <>
+    // display:contents — дочерние элементы становятся прямыми ячейками родительской сетки
+    <div className="contents">
       {/* ТОП-статус */}
       <button
         onClick={toggleFeatured}
@@ -76,6 +77,6 @@ export default function AdminBusinessActions({ businessId, isActive, isFeatured 
       >
         {active ? 'Заблокировать' : 'Разблокировать'}
       </Button>
-    </>
+    </div>
   );
 }

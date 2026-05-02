@@ -1,4 +1,7 @@
-import { Controller, Get, Patch, Param, Query, UseGuards } from '@nestjs/common';
+import {
+  Controller, Get, Post, Patch, Delete,
+  Param, Query, Body, UseGuards, BadRequestException,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
 import { BusinessesService } from '../businesses/businesses.service';
@@ -6,6 +9,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -95,5 +99,58 @@ export class AdminController {
       data: users,
       meta: { total, page: Number(page), limit: Number(limit), totalPages: Math.ceil(total / Number(limit)) },
     };
+  }
+
+  // Создать пользователя с любой ролью
+  @Post('users')
+  @ApiOperation({ summary: 'Создать пользователя (SUPER_ADMIN)' })
+  async createUser(
+    @Body() body: { name: string; email: string; password: string; role: Role; city?: string; country?: string },
+  ) {
+    const existing = await this.prisma.user.findUnique({ where: { email: body.email } });
+    if (existing) throw new BadRequestException('Email уже занят');
+    const passwordHash = await bcrypt.hash(body.password, 10);
+    return this.prisma.user.create({
+      data: {
+        name: body.name,
+        email: body.email,
+        passwordHash,
+        role: body.role,
+        city: body.city,
+        country: body.country,
+      },
+      select: { id: true, name: true, email: true, role: true, city: true, country: true, createdAt: true },
+    });
+  }
+
+  // Обновить пользователя (имя, email, роль, город)
+  @Patch('users/:id')
+  @ApiOperation({ summary: 'Обновить пользователя (SUPER_ADMIN)' })
+  async updateUser(
+    @Param('id') id: string,
+    @Body() body: { name?: string; email?: string; role?: Role; city?: string; country?: string },
+  ) {
+    if (body.email) {
+      const conflict = await this.prisma.user.findFirst({
+        where: { email: body.email, id: { not: id } },
+      });
+      if (conflict) throw new BadRequestException('Email уже занят');
+    }
+    return this.prisma.user.update({
+      where: { id },
+      data: body,
+      select: { id: true, name: true, email: true, role: true, city: true, country: true, createdAt: true },
+    });
+  }
+
+  // Soft delete пользователя
+  @Delete('users/:id')
+  @ApiOperation({ summary: 'Удалить пользователя (soft delete, SUPER_ADMIN)' })
+  deleteUser(@Param('id') id: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { isDeleted: true, deletedAt: new Date() },
+      select: { id: true, isDeleted: true },
+    });
   }
 }

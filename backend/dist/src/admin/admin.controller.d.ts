@@ -17,23 +17,24 @@ export declare class AdminController {
     getBusinesses(page?: string, limit?: string): Promise<{
         data: ({
             owner: {
-                name: string;
                 email: string;
+                name: string;
             };
         } & {
             id: string;
-            createdAt: Date;
             name: string;
+            phone: string | null;
+            country: string;
+            city: string;
+            createdAt: Date;
             slug: string;
             description: string | null;
             address: string | null;
-            phone: string | null;
             logoUrl: string | null;
             category: import("@prisma/client").$Enums.BusinessCategory;
-            country: string;
-            city: string;
             isActive: boolean;
             isVisible: boolean;
+            isFeatured: boolean;
             maxAdvanceBookingDays: number;
             ownerId: string;
         })[];
@@ -46,47 +47,49 @@ export declare class AdminController {
     }>;
     toggleBusiness(id: string): Promise<{
         id: string;
-        createdAt: Date;
         name: string;
+        phone: string | null;
+        country: string;
+        city: string;
+        createdAt: Date;
         slug: string;
         description: string | null;
         address: string | null;
-        phone: string | null;
         logoUrl: string | null;
         category: import("@prisma/client").$Enums.BusinessCategory;
-        country: string;
-        city: string;
         isActive: boolean;
         isVisible: boolean;
+        isFeatured: boolean;
         maxAdvanceBookingDays: number;
         ownerId: string;
     }>;
     toggleFeatured(id: string): Promise<{
         id: string;
-        createdAt: Date;
         name: string;
+        phone: string | null;
+        country: string;
+        city: string;
+        createdAt: Date;
         slug: string;
         description: string | null;
         address: string | null;
-        phone: string | null;
         logoUrl: string | null;
         category: import("@prisma/client").$Enums.BusinessCategory;
-        country: string;
-        city: string;
         isActive: boolean;
         isVisible: boolean;
+        isFeatured: boolean;
         maxAdvanceBookingDays: number;
         ownerId: string;
     }>;
     getUsers(page?: string, limit?: string, role?: Role): Promise<{
         data: {
             id: string;
-            createdAt: Date;
+            email: string;
             name: string;
+            role: import("@prisma/client").$Enums.Role;
             country: string | null;
             city: string | null;
-            email: string;
-            role: import("@prisma/client").$Enums.Role;
+            createdAt: Date;
         }[];
         meta: {
             total: number;
@@ -95,4 +98,39 @@ export declare class AdminController {
             totalPages: number;
         };
     }>;
+    createUser(body: {
+        name: string;
+        email: string;
+        password: string;
+        role: Role;
+        city?: string;
+        country?: string;
+    }): Promise<{
+        id: string;
+        email: string;
+        name: string;
+        role: import("@prisma/client").$Enums.Role;
+        country: string | null;
+        city: string | null;
+        createdAt: Date;
+    }>;
+    updateUser(id: string, body: {
+        name?: string;
+        email?: string;
+        role?: Role;
+        city?: string;
+        country?: string;
+    }): Promise<{
+        id: string;
+        email: string;
+        name: string;
+        role: import("@prisma/client").$Enums.Role;
+        country: string | null;
+        city: string | null;
+        createdAt: Date;
+    }>;
+    deleteUser(id: string): import("@prisma/client").Prisma.Prisma__UserClient<{
+        id: string;
+        isDeleted: boolean;
+    }, never, import("@prisma/client/runtime/client").DefaultArgs, import("@prisma/client").Prisma.PrismaClientOptions>;
 }

@@ -10,6 +10,11 @@ export declare class ManageController {
     private readonly servicesService;
     constructor(businessesService: BusinessesService, staffService: StaffService, servicesService: ServicesService);
     getStaff(userId: string): Promise<({
+        user: {
+            email: string;
+            name: string;
+            avatarUrl: string | null;
+        };
         services: ({
             service: {
                 id: string;
@@ -19,20 +24,20 @@ export declare class ManageController {
             staffId: string;
             serviceId: string;
         })[];
-        user: {
-            name: string;
-            email: string;
-            avatarUrl: string | null;
-        };
     } & {
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     })[]>;
     createStaff(userId: string, dto: CreateStaffDto): Promise<({
+        user: {
+            email: string;
+            name: string;
+            avatarUrl: string | null;
+        };
         services: ({
             service: {
                 id: string;
@@ -42,18 +47,13 @@ export declare class ManageController {
             staffId: string;
             serviceId: string;
         })[];
-        user: {
-            name: string;
-            email: string;
-            avatarUrl: string | null;
-        };
     } & {
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     }) | null>;
     updateStaff(id: string, userId: string, data: {
         bio?: string;
@@ -64,24 +64,24 @@ export declare class ManageController {
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     }>;
     getStaffSchedule(staffId: string, userId: string): Promise<{
         id: string;
-        staffId: string;
-        dayOfWeek: number;
         startTime: string;
         endTime: string;
+        staffId: string;
+        dayOfWeek: number;
         isWorking: boolean;
     }[]>;
     updateStaffSchedule(staffId: string, userId: string, schedule: ScheduleDayDto[]): Promise<{
         id: string;
-        staffId: string;
-        dayOfWeek: number;
         startTime: string;
         endTime: string;
+        staffId: string;
+        dayOfWeek: number;
         isWorking: boolean;
     }[]>;
     getServices(userId: string): Promise<{
@@ -89,87 +89,89 @@ export declare class ManageController {
         name: string;
         description: string | null;
         isActive: boolean;
-        businessId: string;
         price: import("@prisma/client-runtime-utils").Decimal;
         duration: number;
+        businessId: string;
     }[]>;
     createService(userId: string, dto: CreateServiceDto): Promise<{
         id: string;
         name: string;
         description: string | null;
         isActive: boolean;
-        businessId: string;
         price: import("@prisma/client-runtime-utils").Decimal;
         duration: number;
+        businessId: string;
     }>;
     updateService(id: string, userId: string, dto: Partial<CreateServiceDto>): Promise<{
         id: string;
         name: string;
         description: string | null;
         isActive: boolean;
-        businessId: string;
         price: import("@prisma/client-runtime-utils").Decimal;
         duration: number;
+        businessId: string;
     }>;
     removeService(id: string, userId: string): Promise<{
         id: string;
         name: string;
         description: string | null;
         isActive: boolean;
-        businessId: string;
         price: import("@prisma/client-runtime-utils").Decimal;
         duration: number;
+        businessId: string;
     }>;
     getSettings(userId: string): Promise<{
         staff: {
             id: string;
             isActive: boolean;
             businessId: string;
-            userId: string;
             bio: string | null;
             photoUrl: string | null;
+            userId: string;
         }[];
         services: {
             id: string;
             name: string;
             description: string | null;
             isActive: boolean;
-            businessId: string;
             price: import("@prisma/client-runtime-utils").Decimal;
             duration: number;
+            businessId: string;
         }[];
     } & {
         id: string;
         name: string;
+        phone: string | null;
+        country: string;
+        city: string;
+        createdAt: Date;
         slug: string;
         description: string | null;
         address: string | null;
-        phone: string | null;
         logoUrl: string | null;
         category: import("@prisma/client").$Enums.BusinessCategory;
-        country: string;
-        city: string;
         isActive: boolean;
         isVisible: boolean;
+        isFeatured: boolean;
         maxAdvanceBookingDays: number;
         ownerId: string;
-        createdAt: Date;
     }>;
     updateSettings(userId: string, dto: Record<string, unknown>): Promise<{
         id: string;
         name: string;
+        phone: string | null;
+        country: string;
+        city: string;
+        createdAt: Date;
         slug: string;
         description: string | null;
         address: string | null;
-        phone: string | null;
         logoUrl: string | null;
         category: import("@prisma/client").$Enums.BusinessCategory;
-        country: string;
-        city: string;
         isActive: boolean;
         isVisible: boolean;
+        isFeatured: boolean;
         maxAdvanceBookingDays: number;
         ownerId: string;
-        createdAt: Date;
     }>;
 }

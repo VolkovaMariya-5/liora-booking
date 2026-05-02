@@ -44,7 +44,7 @@ export default async function AdminBusinessesPage() {
 
       <div className="rounded-xl border border-border overflow-hidden">
         {/* Заголовок таблицы */}
-        <div className="grid grid-cols-[1fr_1fr_auto_auto_auto_auto] gap-3 px-4 py-2 bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <div className="grid grid-cols-[2fr_1.5fr_120px_48px_90px_140px] gap-3 px-4 py-2 bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wide">
           <span>Название</span>
           <span>Владелец</span>
           <span>Город</span>
@@ -59,7 +59,7 @@ export default async function AdminBusinessesPage() {
           businesses.map((b) => (
             <div
               key={b.id}
-              className={`grid grid-cols-[1fr_1fr_auto_auto_auto_auto] gap-3 items-center px-4 py-3 border-t border-border text-sm ${
+              className={`grid grid-cols-[2fr_1.5fr_120px_48px_90px_140px] gap-3 items-center px-4 py-3 border-t border-border text-sm ${
                 !b.isActive ? 'opacity-50' : ''
               }`}
             >

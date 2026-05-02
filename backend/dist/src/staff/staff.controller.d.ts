@@ -6,6 +6,11 @@ export declare class StaffController {
     private readonly staffService;
     constructor(staffService: StaffService);
     findByBusiness(businessId: string): Promise<({
+        user: {
+            email: string;
+            name: string;
+            avatarUrl: string | null;
+        };
         services: ({
             service: {
                 id: string;
@@ -17,28 +22,28 @@ export declare class StaffController {
             staffId: string;
             serviceId: string;
         })[];
-        user: {
-            name: string;
-            email: string;
-            avatarUrl: string | null;
-        };
         schedules: {
             id: string;
-            staffId: string;
-            dayOfWeek: number;
             startTime: string;
             endTime: string;
+            staffId: string;
+            dayOfWeek: number;
             isWorking: boolean;
         }[];
     } & {
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     })[]>;
     create(businessId: string, dto: CreateStaffDto, userId: string): Promise<({
+        user: {
+            email: string;
+            name: string;
+            avatarUrl: string | null;
+        };
         services: ({
             service: {
                 id: string;
@@ -48,18 +53,13 @@ export declare class StaffController {
             staffId: string;
             serviceId: string;
         })[];
-        user: {
-            name: string;
-            email: string;
-            avatarUrl: string | null;
-        };
     } & {
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     }) | null>;
     update(id: string, data: {
         bio?: string;
@@ -69,41 +69,41 @@ export declare class StaffController {
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     }>;
     deactivate(id: string, userId: string): Promise<{
         activeBookingsCount: number;
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     }>;
     getMySchedule(userId: string): Promise<{
         id: string;
-        staffId: string;
-        dayOfWeek: number;
         startTime: string;
         endTime: string;
+        staffId: string;
+        dayOfWeek: number;
         isWorking: boolean;
     }[]>;
     updateMySchedule(userId: string, schedule: ScheduleDayDto[]): Promise<{
         id: string;
-        staffId: string;
-        dayOfWeek: number;
         startTime: string;
         endTime: string;
+        staffId: string;
+        dayOfWeek: number;
         isWorking: boolean;
     }[]>;
     updateSchedule(staffId: string, schedule: ScheduleDayDto[], user: User): Promise<{
         id: string;
-        staffId: string;
-        dayOfWeek: number;
         startTime: string;
         endTime: string;
+        staffId: string;
+        dayOfWeek: number;
         isWorking: boolean;
     }[]>;
     getAvailableSlots(id: string, date: string, serviceIds: string): Promise<{

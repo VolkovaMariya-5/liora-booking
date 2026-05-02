@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { AdminUserActions, AdminCreateUserButton } from './AdminUserActions';
 
 interface AdminUser {
   id: string;
@@ -66,7 +67,10 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="font-heading text-4xl font-semibold mb-6">Пользователи ({users.length})</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="font-heading text-4xl font-semibold">Пользователи ({users.length})</h1>
+        <AdminCreateUserButton />
+      </div>
 
       {/* Фильтр по роли */}
       <div className="flex flex-wrap gap-2 mb-6">
@@ -90,11 +94,12 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
 
       {/* Таблица пользователей */}
       <div className="rounded-xl border border-border overflow-hidden">
-        <div className="grid grid-cols-[1fr_1fr_auto_auto] gap-3 px-4 py-2 bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <div className="grid grid-cols-[1.5fr_1.5fr_100px_90px_180px] gap-3 px-4 py-2 bg-muted text-xs font-medium text-muted-foreground uppercase tracking-wide">
           <span>Пользователь</span>
           <span>Email</span>
           <span>Роль</span>
           <span>Дата</span>
+          <span className="text-right">Действия</span>
         </div>
 
         {users.length === 0 ? (
@@ -103,23 +108,25 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
           users.map((u) => (
             <div
               key={u.id}
-              className={`grid grid-cols-[1fr_1fr_auto_auto] gap-3 items-center px-4 py-3 border-t border-border text-sm ${
+              className={`grid grid-cols-[1.5fr_1.5fr_100px_90px_180px] gap-3 items-center px-4 py-3 border-t border-border text-sm ${
                 u.isDeleted ? 'opacity-40 line-through' : ''
               }`}
             >
               <div>
                 <p className="font-medium text-foreground">{u.name}</p>
-                {u.city && (
-                  <p className="text-xs text-muted-foreground">{u.city}</p>
-                )}
+                {u.city && <p className="text-xs text-muted-foreground">{u.city}</p>}
               </div>
-              <span className="text-muted-foreground truncate">{u.email}</span>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${ROLE_COLORS[u.role] ?? 'bg-muted text-muted-foreground'}`}>
+              <span className="text-muted-foreground truncate text-xs">{u.email}</span>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium w-fit ${ROLE_COLORS[u.role] ?? 'bg-muted text-muted-foreground'}`}>
                 {ROLE_LABELS[u.role] ?? u.role}
               </span>
               <span className="text-xs text-muted-foreground whitespace-nowrap">
                 {new Date(u.createdAt).toLocaleDateString('ru', { day: 'numeric', month: 'short', year: '2-digit' })}
               </span>
+              {!u.isDeleted
+                ? <AdminUserActions user={u} />
+                : <span className="text-xs text-muted-foreground text-right">Удалён</span>
+              }
             </div>
           ))
         )}

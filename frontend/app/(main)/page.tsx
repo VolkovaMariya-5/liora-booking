@@ -60,12 +60,9 @@ export default async function HomePage() {
             Записывайтесь к проверенным мастерам в несколько кликов.
             Рейтинг, живые работы и реальные отзывы — в одном месте.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <div className="flex items-center justify-center">
             <Button size="lg" className="px-8 h-12 text-sm rounded-full" render={<Link href="/businesses" />}>
               Найти мастера →
-            </Button>
-            <Button size="lg" variant="outline" className="px-8 h-12 text-sm rounded-full" render={<Link href="/auth/register-business" />}>
-              Я — владелец салона
             </Button>
           </div>
         </div>
@@ -310,18 +307,13 @@ export default async function HomePage() {
                 Без комиссий и скрытых платежей.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Link
-                  href="/auth/register-business"
-                  className="bg-primary-foreground text-primary text-sm font-medium px-6 py-3.5 rounded-full hover:bg-primary-foreground/90 transition-colors"
+                <Button
+                  size="lg"
+                  className="px-8 h-12 text-sm rounded-full bg-primary-foreground text-primary hover:bg-primary-foreground/90"
+                  render={<Link href="/auth/register-business" />}
                 >
                   Подключить бесплатно →
-                </Link>
-                <Link
-                  href="/businesses"
-                  className="text-primary-foreground/65 border border-primary-foreground/25 text-sm font-medium px-6 py-3.5 rounded-full hover:border-primary-foreground/50 transition-colors"
-                >
-                  Посмотреть демо
-                </Link>
+                </Button>
               </div>
             </div>
 

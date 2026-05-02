@@ -14,19 +14,20 @@ export declare class BusinessesController {
             reviewCount: number;
             id: string;
             name: string;
+            phone: string | null;
+            country: string;
+            city: string;
+            createdAt: Date;
             slug: string;
             description: string | null;
             address: string | null;
-            phone: string | null;
             logoUrl: string | null;
             category: import("@prisma/client").$Enums.BusinessCategory;
-            country: string;
-            city: string;
             isActive: boolean;
             isVisible: boolean;
+            isFeatured: boolean;
             maxAdvanceBookingDays: number;
             ownerId: string;
-            createdAt: Date;
         }[];
         meta: {
             total: number;
@@ -40,83 +41,40 @@ export declare class BusinessesController {
             id: string;
             isActive: boolean;
             businessId: string;
-            userId: string;
             bio: string | null;
             photoUrl: string | null;
+            userId: string;
         }[];
         services: {
             id: string;
             name: string;
             description: string | null;
             isActive: boolean;
-            businessId: string;
             price: import("@prisma/client-runtime-utils").Decimal;
             duration: number;
+            businessId: string;
         }[];
     } & {
         id: string;
         name: string;
+        phone: string | null;
+        country: string;
+        city: string;
+        createdAt: Date;
         slug: string;
         description: string | null;
         address: string | null;
-        phone: string | null;
         logoUrl: string | null;
         category: import("@prisma/client").$Enums.BusinessCategory;
-        country: string;
-        city: string;
         isActive: boolean;
         isVisible: boolean;
+        isFeatured: boolean;
         maxAdvanceBookingDays: number;
         ownerId: string;
-        createdAt: Date;
     }>;
     findBySlug(slug: string): Promise<{
         avgRating: number | null;
         reviewCount: number;
-        staff: ({
-            services: ({
-                service: {
-                    id: string;
-                    name: string;
-                    description: string | null;
-                    isActive: boolean;
-                    businessId: string;
-                    price: import("@prisma/client-runtime-utils").Decimal;
-                    duration: number;
-                };
-            } & {
-                staffId: string;
-                serviceId: string;
-            })[];
-            user: {
-                name: string;
-                avatarUrl: string | null;
-            };
-            schedules: {
-                id: string;
-                staffId: string;
-                dayOfWeek: number;
-                startTime: string;
-                endTime: string;
-                isWorking: boolean;
-            }[];
-        } & {
-            id: string;
-            isActive: boolean;
-            businessId: string;
-            userId: string;
-            bio: string | null;
-            photoUrl: string | null;
-        })[];
-        services: {
-            id: string;
-            name: string;
-            description: string | null;
-            isActive: boolean;
-            businessId: string;
-            price: import("@prisma/client-runtime-utils").Decimal;
-            duration: number;
-        }[];
         reviews: ({
             client: {
                 name: string;
@@ -125,61 +83,108 @@ export declare class BusinessesController {
         } & {
             id: string;
             createdAt: Date;
-            bookingId: string;
+            businessId: string;
             clientId: string;
             staffId: string;
-            businessId: string;
+            bookingId: string;
             rating: number;
             comment: string | null;
         })[];
+        staff: ({
+            user: {
+                name: string;
+                avatarUrl: string | null;
+            };
+            services: ({
+                service: {
+                    id: string;
+                    name: string;
+                    description: string | null;
+                    isActive: boolean;
+                    price: import("@prisma/client-runtime-utils").Decimal;
+                    duration: number;
+                    businessId: string;
+                };
+            } & {
+                staffId: string;
+                serviceId: string;
+            })[];
+            schedules: {
+                id: string;
+                startTime: string;
+                endTime: string;
+                staffId: string;
+                dayOfWeek: number;
+                isWorking: boolean;
+            }[];
+        } & {
+            id: string;
+            isActive: boolean;
+            businessId: string;
+            bio: string | null;
+            photoUrl: string | null;
+            userId: string;
+        })[];
+        services: {
+            id: string;
+            name: string;
+            description: string | null;
+            isActive: boolean;
+            price: import("@prisma/client-runtime-utils").Decimal;
+            duration: number;
+            businessId: string;
+        }[];
         id: string;
         name: string;
+        phone: string | null;
+        country: string;
+        city: string;
+        createdAt: Date;
         slug: string;
         description: string | null;
         address: string | null;
-        phone: string | null;
         logoUrl: string | null;
         category: import("@prisma/client").$Enums.BusinessCategory;
-        country: string;
-        city: string;
         isActive: boolean;
         isVisible: boolean;
+        isFeatured: boolean;
         maxAdvanceBookingDays: number;
         ownerId: string;
-        createdAt: Date;
     }>;
     update(id: string, dto: UpdateBusinessDto, user: User): Promise<{
         id: string;
         name: string;
+        phone: string | null;
+        country: string;
+        city: string;
+        createdAt: Date;
         slug: string;
         description: string | null;
         address: string | null;
-        phone: string | null;
         logoUrl: string | null;
         category: import("@prisma/client").$Enums.BusinessCategory;
-        country: string;
-        city: string;
         isActive: boolean;
         isVisible: boolean;
+        isFeatured: boolean;
         maxAdvanceBookingDays: number;
         ownerId: string;
-        createdAt: Date;
     }>;
     toggle(id: string): Promise<{
         id: string;
         name: string;
+        phone: string | null;
+        country: string;
+        city: string;
+        createdAt: Date;
         slug: string;
         description: string | null;
         address: string | null;
-        phone: string | null;
         logoUrl: string | null;
         category: import("@prisma/client").$Enums.BusinessCategory;
-        country: string;
-        city: string;
         isActive: boolean;
         isVisible: boolean;
+        isFeatured: boolean;
         maxAdvanceBookingDays: number;
         ownerId: string;
-        createdAt: Date;
     }>;
 }

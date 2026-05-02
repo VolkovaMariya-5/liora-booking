@@ -139,6 +139,7 @@ export declare class BookingsService {
             category: import("@prisma/client").$Enums.BusinessCategory;
             isActive: boolean;
             isVisible: boolean;
+            isFeatured: boolean;
             maxAdvanceBookingDays: number;
             ownerId: string;
         };

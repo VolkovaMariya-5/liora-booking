@@ -8,6 +8,11 @@ export declare class StaffService {
     private readonly businessesService;
     constructor(prisma: PrismaService, businessesService: BusinessesService);
     findByBusiness(businessId: string): Promise<({
+        user: {
+            email: string;
+            name: string;
+            avatarUrl: string | null;
+        };
         services: ({
             service: {
                 id: string;
@@ -19,28 +24,28 @@ export declare class StaffService {
             staffId: string;
             serviceId: string;
         })[];
-        user: {
-            name: string;
-            email: string;
-            avatarUrl: string | null;
-        };
         schedules: {
             id: string;
-            staffId: string;
-            dayOfWeek: number;
             startTime: string;
             endTime: string;
+            staffId: string;
+            dayOfWeek: number;
             isWorking: boolean;
         }[];
     } & {
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     })[]>;
     findByBusinessForAdmin(businessId: string): Promise<({
+        user: {
+            email: string;
+            name: string;
+            avatarUrl: string | null;
+        };
         services: ({
             service: {
                 id: string;
@@ -50,22 +55,18 @@ export declare class StaffService {
             staffId: string;
             serviceId: string;
         })[];
-        user: {
-            name: string;
-            email: string;
-            avatarUrl: string | null;
-        };
     } & {
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     })[]>;
     findById(id: string): Promise<{
-        business: {
-            maxAdvanceBookingDays: number;
+        user: {
+            name: string;
+            avatarUrl: string | null;
         };
         services: ({
             service: {
@@ -73,35 +74,39 @@ export declare class StaffService {
                 name: string;
                 description: string | null;
                 isActive: boolean;
-                businessId: string;
                 price: import("@prisma/client-runtime-utils").Decimal;
                 duration: number;
+                businessId: string;
             };
         } & {
             staffId: string;
             serviceId: string;
         })[];
-        user: {
-            name: string;
-            avatarUrl: string | null;
+        business: {
+            maxAdvanceBookingDays: number;
         };
         schedules: {
             id: string;
-            staffId: string;
-            dayOfWeek: number;
             startTime: string;
             endTime: string;
+            staffId: string;
+            dayOfWeek: number;
             isWorking: boolean;
         }[];
     } & {
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     }>;
     create(businessId: string, dto: CreateStaffDto, ownerId: string): Promise<({
+        user: {
+            email: string;
+            name: string;
+            avatarUrl: string | null;
+        };
         services: ({
             service: {
                 id: string;
@@ -111,18 +116,13 @@ export declare class StaffService {
             staffId: string;
             serviceId: string;
         })[];
-        user: {
-            name: string;
-            email: string;
-            avatarUrl: string | null;
-        };
     } & {
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     }) | null>;
     update(id: string, data: {
         bio?: string;
@@ -132,57 +132,57 @@ export declare class StaffService {
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     }>;
     activate(id: string, ownerId: string): Promise<{
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     }>;
     deactivate(id: string, ownerId: string): Promise<{
         activeBookingsCount: number;
         id: string;
         isActive: boolean;
         businessId: string;
-        userId: string;
         bio: string | null;
         photoUrl: string | null;
+        userId: string;
     }>;
     getScheduleByStaffId(staffId: string, ownerId: string): Promise<{
         id: string;
-        staffId: string;
-        dayOfWeek: number;
         startTime: string;
         endTime: string;
+        staffId: string;
+        dayOfWeek: number;
         isWorking: boolean;
     }[]>;
     getMySchedule(userId: string): Promise<{
         id: string;
-        staffId: string;
-        dayOfWeek: number;
         startTime: string;
         endTime: string;
+        staffId: string;
+        dayOfWeek: number;
         isWorking: boolean;
     }[]>;
     updateMySchedule(userId: string, schedule: ScheduleDayDto[]): Promise<{
         id: string;
-        staffId: string;
-        dayOfWeek: number;
         startTime: string;
         endTime: string;
+        staffId: string;
+        dayOfWeek: number;
         isWorking: boolean;
     }[]>;
     updateSchedule(staffId: string, schedule: ScheduleDayDto[], requesterId: string, requesterRole: Role): Promise<{
         id: string;
-        staffId: string;
-        dayOfWeek: number;
         startTime: string;
         endTime: string;
+        staffId: string;
+        dayOfWeek: number;
         isWorking: boolean;
     }[]>;
     getAvailableSlots(staffId: string, date: string, serviceIds: string[]): Promise<{
