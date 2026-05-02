@@ -38,7 +38,7 @@ const CAT_ICON = Object.fromEntries(BUSINESS_CATEGORIES.map((c) => [c.value, c.i
 const IMG = {
   hair:    'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=900&q=80',
   nails:   'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=700&q=80',
-  lash:    'https://images.unsplash.com/photo-1583241800698-9c3e14a38acb?w=700&q=80',
+  lash:    'https://images.unsplash.com/photo-1616683693504-3ea7e9ad6fec?w=700&q=80',
   barber:  'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=700&q=80',
   face:    'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=700&q=80',
   spa:     'https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=700&q=80',
@@ -102,7 +102,7 @@ export default async function HomePage() {
               className="col-span-2 lg:col-span-3 row-span-2 rounded-2xl overflow-hidden relative group"
             >
               <Image src={IMG.hair} alt="Красота" fill className="object-cover transition-transform duration-500 group-hover:scale-105" unoptimized />
-              <div className="absolute inset-0 bg-linear-to-br from-transparent via-transparent to-foreground/65" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent" />
               <div className="absolute left-5 bottom-5 text-white">
                 <div className="font-heading text-3xl lg:text-4xl font-normal">Красота</div>
                 <div className="text-xs text-white/75 mt-1">Парикмахерские, бровисты, визажисты · 312 мест</div>

@@ -2,9 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
+import { revalidateBusinesses } from '@/app/actions/revalidate';
 
 interface BusinessSettings {
   id: string;
@@ -20,6 +22,7 @@ interface BusinessSettings {
 // Поля: описание, адрес, телефон, лого, горизонт записи (maxAdvanceBookingDays)
 export default function BusinessSettingsForm({ initialData }: { initialData: BusinessSettings }) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [description, setDescription] = useState(initialData.description ?? '');
   const [address, setAddress] = useState(initialData.address ?? '');
   const [phone, setPhone] = useState(initialData.phone ?? '');
@@ -28,7 +31,8 @@ export default function BusinessSettingsForm({ initialData }: { initialData: Bus
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Загрузка логотипа через бэкенд
+  // Загрузка логотипа — fetch напрямую с токеном из сессии
+  // (axios interceptor вызывает getSession() асинхронно и может упасть до запроса)
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -36,13 +40,24 @@ export default function BusinessSettingsForm({ initialData }: { initialData: Bus
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await api.post('/upload/image', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setLogoUrl(res.data.url);
+      const token = (session as any)?.accessToken;
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/upload/image`,
+        {
+          method: 'POST',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData, // fetch сам выставит Content-Type с boundary
+        },
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message || 'Ошибка сервера');
+      }
+      const data = await res.json();
+      setLogoUrl(data.url);
       toast.success('Логотип загружен');
-    } catch {
-      toast.error('Не удалось загрузить логотип');
+    } catch (err: any) {
+      toast.error(err?.message || 'Не удалось загрузить логотип');
     } finally {
       setUploading(false);
     }
@@ -65,6 +80,7 @@ export default function BusinessSettingsForm({ initialData }: { initialData: Bus
         maxAdvanceBookingDays: days,
       });
       toast.success('Настройки сохранены');
+      await revalidateBusinesses(); // сбрасываем кэш каталога
       router.refresh();
     } catch (err: any) {
       toast.error(err?.response?.data?.message || 'Ошибка сохранения');

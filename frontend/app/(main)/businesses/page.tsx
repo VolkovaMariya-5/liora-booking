@@ -32,7 +32,7 @@ async function fetchBusinesses(params: Record<string, string>): Promise<Business
   const url = `${process.env.NEXT_PUBLIC_API_URL}/businesses?${query}`;
 
   try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { cache: 'no-store' });
     if (!res.ok) return { data: [], meta: { total: 0, page: 1, limit: 12, totalPages: 0 } };
     return res.json();
   } catch {

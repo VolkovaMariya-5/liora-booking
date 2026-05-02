@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -184,6 +185,7 @@ function EditStaffForm({
   onSuccess: (updated: Partial<StaffMember>) => void;
   onCancel: () => void;
 }) {
+  const { data: session } = useSession();
   const [bio, setBio] = useState(member.bio ?? '');
   const [photoUrl, setPhotoUrl] = useState(member.photoUrl ?? '');
   const [uploading, setUploading] = useState(false);
@@ -234,13 +236,24 @@ function EditStaffForm({
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const res = await api.post('/upload/image', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      setPhotoUrl(res.data.url);
+      const token = (session as any)?.accessToken;
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/upload/image`,
+        {
+          method: 'POST',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData,
+        },
+      );
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.message || 'Ошибка сервера');
+      }
+      const data = await res.json();
+      setPhotoUrl(data.url);
       toast.success('Фото загружено');
-    } catch {
-      toast.error('Не удалось загрузить фото');
+    } catch (err: any) {
+      toast.error(err?.message || 'Не удалось загрузить фото');
     } finally {
       setUploading(false);
     }
