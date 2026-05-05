@@ -4,6 +4,6 @@ buildCommand = "npx prisma generate && npm run build"
 
 [deploy]
 startCommand = "npx prisma migrate deploy && npm run start:prod"
-healthcheckPath = "/api"
+healthcheckPath = "/api/docs"
 healthcheckTimeout = 60
 restartPolicyType = "on_failure"
