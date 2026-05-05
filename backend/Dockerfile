@@ -16,7 +16,7 @@ COPY . .
 # Компилируем TypeScript напрямую через tsc (минуя nest build)
 RUN npx tsc -p tsconfig.build.json
 
-# Проверяем что dist/main.js создался
-RUN test -f dist/main.js && echo "✓ dist/main.js exists" || (echo "✗ dist/main.js NOT FOUND" && ls -la dist/ && exit 1)
+# tsc кладёт в dist/src/main.js (сохраняет структуру папок)
+RUN test -f dist/src/main.js && echo "✓ dist/src/main.js exists" || (echo "✗ NOT FOUND" && find dist/ -name "*.js" | head -5 && exit 1)
 
-CMD npx prisma migrate deploy && node dist/main
+CMD npx prisma migrate deploy && node dist/src/main
