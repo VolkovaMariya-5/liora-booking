@@ -1,61 +1,46 @@
-import { auth } from '@/lib/auth';
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-// middleware.ts — выполняется при каждом запросе к защищённым маршрутам
-// NextAuth v5 экспортирует auth() как middleware-обёртку
+// proxy.ts — Edge Runtime middleware для защиты маршрутов
+// НЕ импортирует auth.ts (Node.js зависимости несовместимы с Edge Runtime)
+// Только проверяет наличие сессионной куки — полная верификация в Server Components
 
-export default auth((req) => {
-  const { nextUrl, auth: session } = req;
-  const isLoggedIn = !!session?.user;
-  const role = session?.user?.role;
-  const path = nextUrl.pathname;
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
 
-  // ==================== Публичные маршруты ====================
-  // Эти маршруты доступны всем без авторизации
-  const publicPaths = ['/', '/businesses', '/auth/login', '/auth/register', '/auth/register-business'];
-  const isPublicPath = publicPaths.some((p) => path === p || path.startsWith(p));
-
-  // /api/auth/* — NextAuth системные маршруты, всегда пропускаем
-  if (path.startsWith('/api/auth')) {
+  if (pathname.startsWith('/api/auth')) {
     return NextResponse.next();
   }
 
-  // ==================== Редирект неавторизованных ====================
+  const publicPaths = [
+    '/',
+    '/businesses',
+    '/auth/login',
+    '/auth/register',
+    '/auth/register-business',
+  ];
+  const isPublicPath = publicPaths.some(
+    (p) => pathname === p || pathname.startsWith(p + '/'),
+  );
+
+  const sessionCookie =
+    request.cookies.get('authjs.session-token') ||
+    request.cookies.get('__Secure-authjs.session-token');
+  const isLoggedIn = !!sessionCookie;
+
   if (!isLoggedIn && !isPublicPath) {
-    // Сохраняем путь в callbackUrl, чтобы вернуться после входа
-    const loginUrl = new URL('/auth/login', nextUrl.origin);
-    loginUrl.searchParams.set('callbackUrl', path);
+    const loginUrl = new URL('/auth/login', request.url);
+    loginUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // ==================== Редирект по ролям ====================
-  if (isLoggedIn) {
-    // STAFF не должны попадать в /manage (это для BUSINESS_ADMIN)
-    if (path.startsWith('/manage') && role === 'STAFF') {
-      return NextResponse.redirect(new URL('/staff/dashboard', nextUrl.origin));
-    }
-
-    // CLIENT и STAFF не имеют доступа к /admin
-    if (path.startsWith('/admin') && role !== 'SUPER_ADMIN') {
-      return NextResponse.redirect(new URL('/dashboard', nextUrl.origin));
-    }
-
-    // BUSINESS_ADMIN и STAFF не должны видеть страницы клиента (опционально — мягкий редирект)
-    if (path.startsWith('/staff') && role === 'BUSINESS_ADMIN') {
-      return NextResponse.redirect(new URL('/manage', nextUrl.origin));
-    }
-
-    // Авторизованные пользователи не должны видеть страницы входа
-    if (path.startsWith('/auth/') && isLoggedIn) {
-      return NextResponse.redirect(new URL('/dashboard', nextUrl.origin));
-    }
+  if (isLoggedIn && pathname.startsWith('/auth/')) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return NextResponse.next();
-});
+}
 
-// Конфигурация middleware — указываем для каких путей он запускается
-// Исключаем статические файлы Next.js (_next) и favicon
 export const config = {
   matcher: ['/((?!_next/static|_next/image|favicon.ico|public/).*)'],
 };
