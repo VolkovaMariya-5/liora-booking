@@ -2,18 +2,17 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Копируем package.json и устанавливаем зависимости
+# Копируем сначала prisma — нужен schema.prisma для postinstall (prisma generate)
+COPY prisma ./prisma/
+COPY prisma.config.ts ./
+
+# Копируем package.json и устанавливаем зависимости (postinstall запустит prisma generate)
 COPY package*.json ./
 RUN npm ci
 
-# Копируем prisma схему и генерируем клиент
-COPY prisma ./prisma/
-COPY prisma.config.ts ./
-RUN npx prisma generate
-
-# Копируем исходники и собираем
+# Копируем исходники и собираем TypeScript
 COPY . .
 RUN npm run build
 
-# Запускаем: применяем миграции + стартуем
+# При запуске: применяем миграции → стартуем
 CMD npx prisma migrate deploy && node dist/main
