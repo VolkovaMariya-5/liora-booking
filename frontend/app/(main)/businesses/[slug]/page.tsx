@@ -8,6 +8,7 @@ import { formatPrice } from '@/lib/constants';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { StaffCard } from '@/components/staff/StaffCard';
 import { BUSINESS_CATEGORIES } from '@/lib/constants';
+import { auth } from '@/lib/auth';
 
 // ─── Типы данных ────────────────────────────────────────────────────────────
 
@@ -76,9 +77,31 @@ interface PageProps {
 
 // /businesses/[slug] — публичная страница бизнеса
 // Вкладки: Мастера | Услуги | Отзывы
+// Загрузка избранных мастеров текущего пользователя
+async function fetchFavorites(token: string): Promise<string[]> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/favorites`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data as { staffId: string }[]).map((f) => f.staffId);
+  } catch {
+    return [];
+  }
+}
+
 export default async function BusinessPage({ params }: PageProps) {
   const { slug } = await params;
-  const business = await fetchBusiness(slug);
+  const [business, session] = await Promise.all([
+    fetchBusiness(slug),
+    auth(),
+  ]);
+
+  const favoriteIds = session?.accessToken
+    ? await fetchFavorites(session.accessToken as string)
+    : [];
 
   if (!business) notFound();
 
@@ -185,6 +208,7 @@ export default async function BusinessPage({ params }: PageProps) {
                   photoUrl={s.photoUrl}
                   avatarUrl={s.user?.avatarUrl}
                   services={s.services}
+                  isFavorite={favoriteIds.includes(s.id)}
                 />
               ))}
             </div>
