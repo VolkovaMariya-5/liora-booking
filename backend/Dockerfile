@@ -2,14 +2,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Копируем package.json и устанавливаем зависимости
+# Копируем package.json, prisma схему и конфиг до npm ci,
+# чтобы postinstall (prisma generate) нашёл schema.prisma
 COPY package*.json ./
-RUN npm ci
-
-# Копируем prisma схему и генерируем клиент
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
-RUN npx prisma generate
+RUN npm ci
 
 # Копируем исходники и собираем
 COPY . .
