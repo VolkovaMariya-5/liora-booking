@@ -1,27 +1,29 @@
 import axios from 'axios';
-import { getSession } from 'next-auth/react';
 
-// Базовый URL бэкенда из переменной окружения
-// NEXT_PUBLIC_ — доступен на клиенте (в браузере) и на сервере
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-// Создаём единственный экземпляр axios для всего приложения
-// Все запросы к API будут идти через этот экземпляр
 export const api = axios.create({
   baseURL: BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  headers: { 'Content-Type': 'application/json' },
 });
 
-// Request interceptor — добавляет JWT токен в каждый запрос автоматически
-// Благодаря этому не нужно вручную передавать токен в каждый вызов api
+// Получаем accessToken из NextAuth v5 через прямой запрос к /api/auth/session
+// (getSession() из next-auth/react в v5 не возвращает кастомные поля)
+async function getAccessToken(): Promise<string | null> {
+  try {
+    const res = await fetch('/api/auth/session');
+    if (!res.ok) return null;
+    const session = await res.json();
+    return (session?.accessToken as string) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 api.interceptors.request.use(async (config) => {
-  // getSession() возвращает текущую NextAuth сессию с токеном
-  const session = await getSession();
-  if (session?.accessToken) {
-    // Bearer — стандартный способ передачи JWT токена в HTTP заголовке
-    config.headers.Authorization = `Bearer ${session.accessToken}`;
+  const token = await getAccessToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
