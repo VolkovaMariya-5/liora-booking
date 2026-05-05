@@ -61,10 +61,14 @@ export function StaffCard({
         toast.success('Убрано из избранного');
       }
       onFavoriteChange?.(id, newState);
-    } catch {
-      // Откатываем при ошибке
-      setIsFav(!newState);
-      toast.error('Не удалось обновить избранное');
+    } catch (err: any) {
+      if (err?.response?.status === 409) {
+        // Уже в избранном — просто синхронизируем состояние
+        setIsFav(true);
+      } else {
+        setIsFav(!newState);
+        toast.error('Не удалось обновить избранное');
+      }
     } finally {
       setFavLoading(false);
     }
