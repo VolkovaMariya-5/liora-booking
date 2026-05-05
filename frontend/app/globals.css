@@ -51,13 +51,13 @@
 /* Liora Design System — Warm Editorial Palette
    Cream #F4EFE6 · Forest Green #2D4A3E · Terracotta #B86A4B */
 :root {
-  /* Фон страницы — тёплый кремовый #F4EFE6 */
-  --background: oklch(0.953 0.019 86);
+  /* Фон страницы — белый */
+  --background: oklch(1 0 0);
   /* Основной текст — тёмно-бутылочный #1F2A24 */
   --foreground: oklch(0.196 0.039 155);
 
-  /* Карточки — чуть светлее фона, почти белый #FBF8F2 */
-  --card: oklch(0.978 0.012 91);
+  /* Карточки — белые */
+  --card: oklch(1 0 0);
   --card-foreground: oklch(0.196 0.039 155);
 
   --popover: oklch(0.978 0.012 91);
@@ -71,8 +71,8 @@
   --secondary: oklch(0.577 0.102 39);
   --secondary-foreground: oklch(0.978 0.012 91);
 
-  /* Muted — тёплый бежевый #EAE3D5 */
-  --muted: oklch(0.905 0.025 78);
+  /* Muted — светло-серый */
+  --muted: oklch(0.96 0 0);
   --muted-foreground: oklch(0.567 0.017 77);
 
   /* Accent — мягкая терракота #E8C9B5 */
@@ -81,9 +81,9 @@
 
   --destructive: oklch(0.577 0.245 27.325);
 
-  /* Borders & inputs — тёплый песок #D9CBB0 */
-  --border: oklch(0.832 0.037 78);
-  --input: oklch(0.832 0.037 78);
+  /* Borders & inputs — нейтральный светло-серый */
+  --border: oklch(0.90 0 0);
+  --input: oklch(0.90 0 0);
   --ring: oklch(0.308 0.068 162);
 
   /* Charts */

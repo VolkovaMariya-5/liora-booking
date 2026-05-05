@@ -151,14 +151,14 @@ async function main() {
     data: { email: 'yulia.belle@example.com', passwordHash: await hashPassword('Staff123!'), name: 'Юлия Морозова', role: Role.STAFF, country: 'KZ', city: 'Усть-Каменогорск' },
   });
   const belleStaff1 = await prisma.staff.create({
-    data: { userId: belleStaff1User.id, businessId: belleSalon.id, bio: 'Стилист-колорист с 7-летним опытом. Специализация: окрашивание и уход.', isActive: true },
+    data: { userId: belleStaff1User.id, businessId: belleSalon.id, bio: 'Стилист-колорист с 7-летним опытом. Специализация: окрашивание и уход.', photoUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80', isActive: true },
   });
 
   const belleStaff2User = await prisma.user.create({
     data: { email: 'ksenia.belle@example.com', passwordHash: await hashPassword('Staff123!'), name: 'Ксения Волкова', role: Role.STAFF, country: 'KZ', city: 'Усть-Каменогорск' },
   });
   const belleStaff2 = await prisma.staff.create({
-    data: { userId: belleStaff2User.id, businessId: belleSalon.id, bio: 'Мастер маникюра и педикюра. Сертифицированный nail-технолог.', isActive: true },
+    data: { userId: belleStaff2User.id, businessId: belleSalon.id, bio: 'Мастер маникюра и педикюра. Сертифицированный nail-технолог.', photoUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&q=80', isActive: true },
   });
 
   await prisma.staffService.createMany({
@@ -217,14 +217,14 @@ async function main() {
     data: { email: 'dmitry.kings@example.com', passwordHash: await hashPassword('Staff123!'), name: 'Дмитрий Сидоров', role: Role.STAFF, country: 'KZ', city: 'Усть-Каменогорск' },
   });
   const kingsStaff1 = await prisma.staff.create({
-    data: { userId: kingsStaff1User.id, businessId: kingsBarber.id, bio: 'Барбер с 5-летним стажем. Специализируюсь на классических и fade-стрижках.', isActive: true },
+    data: { userId: kingsStaff1User.id, businessId: kingsBarber.id, bio: 'Барбер с 5-летним стажем. Специализируюсь на классических и fade-стрижках.', photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80', isActive: true },
   });
 
   const kingsStaff2User = await prisma.user.create({
     data: { email: 'alexey.kings@example.com', passwordHash: await hashPassword('Staff123!'), name: 'Алексей Попов', role: Role.STAFF, country: 'KZ', city: 'Усть-Каменогорск' },
   });
   const kingsStaff2 = await prisma.staff.create({
-    data: { userId: kingsStaff2User.id, businessId: kingsBarber.id, bio: 'Мастер мужских стрижек. Работаю быстро и качественно.', isActive: true },
+    data: { userId: kingsStaff2User.id, businessId: kingsBarber.id, bio: 'Мастер мужских стрижек. Работаю быстро и качественно.', photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80', isActive: true },
   });
 
   await prisma.staffService.createMany({
@@ -285,7 +285,7 @@ async function main() {
     data: { email: 'polina.glow@example.com', passwordHash: await hashPassword('Staff123!'), name: 'Полина Жукова', role: Role.STAFF, country: 'KZ', city: 'Усть-Каменогорск' },
   });
   const glowStaff = await prisma.staff.create({
-    data: { userId: glowStaffUser.id, businessId: glowNail.id, bio: 'Nail-мастер, победитель городского чемпионата. Специализация: nail art и наращивание.', isActive: true },
+    data: { userId: glowStaffUser.id, businessId: glowNail.id, bio: 'Nail-мастер, победитель городского чемпионата. Специализация: nail art и наращивание.', photoUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&q=80', isActive: true },
   });
 
   await prisma.staffService.createMany({
