@@ -40,11 +40,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
 
-    // Google OAuth Provider — социальный вход
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    }),
+    // Google OAuth Provider — только если настроены credentials
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [Google({
+          clientId: process.env.GOOGLE_CLIENT_ID,
+          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        })]
+      : []),
   ],
 
   callbacks: {
