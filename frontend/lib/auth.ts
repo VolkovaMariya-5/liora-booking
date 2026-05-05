@@ -1,7 +1,6 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import Google from 'next-auth/providers/google';
-import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
@@ -18,14 +17,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          // Отправляем email+пароль на NestJS — там passport-local проверяет credentials
-          const { data } = await axios.post(`${API_URL}/auth/login`, {
-            email: credentials.email,
-            password: credentials.password,
+          const res = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: credentials.email, password: credentials.password }),
           });
-
-          // NestJS возвращает { user, accessToken }
-          // NextAuth сохранит это в JWT сессии
+          if (!res.ok) return null;
+          const data = await res.json();
           return {
             id: data.user.id,
             email: data.user.email,
@@ -34,7 +32,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             accessToken: data.accessToken,
           };
         } catch {
-          // NestJS вернул 401 — неверные credentials
           return null;
         }
       },
@@ -63,15 +60,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // При входе через Google — вызываем NestJS для создания/нахождения пользователя
       if (account?.provider === 'google' && token.email) {
         try {
-          const { data } = await axios.post(`${API_URL}/auth/google`, {
-            email: token.email,
-            name: token.name,
+          const res = await fetch(`${API_URL}/auth/google`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: token.email, name: token.name }),
           });
-          token.id = data.user.id;
-          token.role = data.user.role;
-          token.accessToken = data.accessToken;
+          if (res.ok) {
+            const data = await res.json();
+            token.id = data.user.id;
+            token.role = data.user.role;
+            token.accessToken = data.accessToken;
+          }
         } catch {
-          // если NestJS недоступен — логируем но не ломаем
           console.error('Ошибка при создании пользователя через Google');
         }
       }
