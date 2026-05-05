@@ -19,4 +19,4 @@ RUN npx tsc -p tsconfig.build.json
 # tsc кладёт в dist/src/main.js (сохраняет структуру папок)
 RUN test -f dist/src/main.js && echo "✓ dist/src/main.js exists" || (echo "✗ NOT FOUND" && find dist/ -name "*.js" | head -5 && exit 1)
 
-CMD npx prisma migrate deploy && node dist/src/main
+CMD npx prisma migrate deploy && npx prisma db seed && node dist/src/main
