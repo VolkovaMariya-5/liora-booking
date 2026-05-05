@@ -88,12 +88,7 @@ export function Footer() {
         <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <span>© {year} Liora. Все права защищены.</span>
           <div className="flex items-center gap-4">
-            <Link href="/privacy" className="hover:text-foreground transition-colors">
-              Политика конфиденциальности
-            </Link>
-            <Link href="/terms" className="hover:text-foreground transition-colors">
-              Условия использования
-            </Link>
+            <span>Усть-Каменогорск, Казахстан</span>
           </div>
         </div>
       </div>
