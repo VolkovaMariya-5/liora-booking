@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
 // НЕ импортирует auth.ts (Node.js зависимости несовместимы с Edge Runtime)
 // Только проверяет наличие сессионной куки — полная верификация в Server Components
 
-export function proxy(request: NextRequest) {
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith('/api/auth')) {
